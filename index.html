@@ -24,19 +24,20 @@
   --font-modern:ui-rounded,-apple-system,"SF Pro Rounded","Segoe UI",system-ui,sans-serif;
 }
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
-html,body{margin:0;padding:0;height:100%;height:100dvh;background:var(--paper);}
+html,body{margin:0;padding:0;background:var(--paper);}
+html{height:100%; height:100dvh; overflow-y:auto; -webkit-overflow-scrolling:touch;}
 body{
+  min-height:100%;
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
   color:var(--ink); overscroll-behavior:none; user-select:none;
   display:flex; justify-content:center; align-items:flex-start;
-  overflow-y:auto; -webkit-overflow-scrolling:touch;
 }
 #app{
   width:100%; max-width:560px;
   background:var(--paper); position:relative; overflow-x:hidden;
   padding-bottom:env(safe-area-inset-bottom);
 }
-.screen{display:none; min-height:100vh; min-height:100dvh; padding:18px 18px 100px;}
+.screen{display:none; min-height:100vh; min-height:100dvh; padding:calc(18px + env(safe-area-inset-top)) 18px 100px;}
 .session-wrap{max-width:640px; margin:0 auto;}
 @media (orientation: landscape) and (min-width: 820px){
   #app{max-width:940px;}
@@ -1108,7 +1109,7 @@ function renderExerciseBody(container, item){
   else if(item.type==="decomposition"){
     var all2 = item.correct.concat(item.distractors);
     shuffleArr(all2);
-    var html3 = '<div class="q-sub">Cible : '+item.target+'</div><div class="chip-wrap">';
+    var html3 = '<div class="chip-wrap">';
     all2.forEach(function(c,i){ html3 += '<span class="chip" data-c="'+encodeURIComponent(c)+'">'+c+'</span>'; });
     html3 += '</div>';
     container.innerHTML = html3;
