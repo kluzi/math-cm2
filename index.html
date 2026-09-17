@@ -1,0 +1,1555 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Maths CM2</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Maths CM2">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#2f2a44">
+<link rel="apple-touch-icon" href="icon.png">
+<style>
+:root{
+  --nombres:#e4304f; --nombres-dark:#b81f3c; --nombres-bg:#fdeaee;
+  --grandeurs:#2f7fd6; --grandeurs-dark:#1f5fa8; --grandeurs-bg:#e8f1fc;
+  --espace:#3fae62; --espace-dark:#2a8a49; --espace-bg:#e9f7ee;
+  --ink:#2f2a44; --ink-soft:#6b6580; --paper:#fbf6ec; --card:#ffffff;
+  --gold:#f2b632; --gold-dark:#d99a12;
+  --ok:#3fae62; --bad:#e4304f;
+  --radius:22px; --radius-sm:14px;
+  --shadow:0 6px 18px rgba(47,42,68,.10);
+  --shadow-lg:0 14px 34px rgba(47,42,68,.18);
+  --font-modern:ui-rounded,-apple-system,"SF Pro Rounded","Segoe UI",system-ui,sans-serif;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;height:100%;height:100dvh;background:var(--paper);}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  color:var(--ink); overscroll-behavior:none; user-select:none;
+  display:flex; justify-content:center; align-items:flex-start;
+  overflow-y:auto; -webkit-overflow-scrolling:touch;
+}
+#app{
+  width:100%; max-width:560px;
+  background:var(--paper); position:relative; overflow-x:hidden;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.screen{display:none; min-height:100vh; min-height:100dvh; padding:18px 18px 100px;}
+.session-wrap{max-width:640px; margin:0 auto;}
+@media (orientation: landscape) and (min-width: 820px){
+  #app{max-width:940px;}
+  .bottom-nav-inner{max-width:940px;}
+  .home-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  .home-grid .chapter-row{margin-bottom:0;}
+  .hello-card{padding:26px 28px;}
+  .result-hero{padding-top:10px;}
+}
+.screen.active{display:block; animation:fadein .25s ease;}
+@keyframes fadein{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+h1,h2,h3,p{margin:0;}
+.title-font{font-family:var(--font-modern); font-weight:800; letter-spacing:-.01em;}
+button{font-family:inherit; border:none; cursor:pointer; background:none; color:inherit;}
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  padding:14px 22px; border-radius:999px; font-weight:800; font-size:16px;
+  box-shadow:var(--shadow); transition:transform .12s ease;
+}
+.btn:active{transform:scale(.96);}
+.btn-primary{background:var(--ink); color:#fff;}
+.btn-gold{background:var(--gold); color:#5a3d00;}
+.btn-outline{background:#fff; border:2px solid #e3ddd0;}
+.btn-block{width:100%;}
+.top-row{display:flex; align-items:center; gap:10px; margin-bottom:14px;}
+.icon-btn{
+  width:42px; height:42px; border-radius:50%; background:#fff; box-shadow:var(--shadow);
+  display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;
+}
+.spacer{flex:1;}
+
+/* ---------- Splash ---------- */
+#screen-splash{
+  flex-direction:column; align-items:center; justify-content:center;
+  min-height:100vh; min-height:100dvh; background:linear-gradient(160deg,#2f6fb0,#4a8fd1 55%,#f2b632 55%);
+  text-align:center; color:#fff; padding:24px;
+}
+#screen-splash.active{display:flex;}
+.splash-badge{
+  width:130px; height:130px; border-radius:34px; background:#fff; display:flex; align-items:center;
+  justify-content:center; font-size:64px; box-shadow:var(--shadow-lg); margin-bottom:22px;
+  transform:rotate(-4deg);
+}
+.splash-title{font-size:30px; font-weight:800; font-family:Georgia,serif; margin-bottom:6px; text-shadow:0 2px 6px rgba(0,0,0,.15);}
+.splash-sub{font-size:15px; opacity:.92; margin-bottom:36px;}
+.splash-loader{width:120px; height:6px; border-radius:6px; background:rgba(255,255,255,.35); overflow:hidden;}
+.splash-loader i{display:block; height:100%; width:40%; background:#fff; border-radius:6px; animation:load 1.1s ease-in-out infinite;}
+@keyframes load{0%{transform:translateX(-100%);}100%{transform:translateX(340%);}}
+
+/* ---------- Cards & home ---------- */
+.card{background:var(--card); border-radius:var(--radius); padding:18px; box-shadow:var(--shadow); margin-bottom:14px;}
+.hello-card{
+  background:linear-gradient(135deg,#3a6fb5,#5892d6); color:#fff; padding:22px; border-radius:var(--radius);
+  margin-bottom:16px; box-shadow:var(--shadow-lg); position:relative; overflow:hidden;
+}
+.hello-card:before{content:"";position:absolute; right:-30px; top:-30px; width:140px; height:140px; border-radius:50%; background:rgba(255,255,255,.12);}
+.hello-day{font-size:12px; text-transform:uppercase; letter-spacing:.08em; opacity:.85; font-weight:700; margin-bottom:6px;}
+.hello-msg{font-size:19px; font-weight:800; line-height:1.35; font-family:var(--font-modern); letter-spacing:-.01em; margin-bottom:14px;}
+.hello-stats{display:flex; gap:10px;}
+.pill{background:rgba(255,255,255,.18); border-radius:999px; padding:7px 13px; font-size:13px; font-weight:700; display:flex; align-items:center; gap:5px;}
+
+.week-card{padding:16px 18px;}
+.week-head{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;}
+.week-head b{font-size:15px;}
+.week-head span{font-size:13px; color:var(--ink-soft); font-weight:700;}
+.progress-track{height:12px; background:#efe9db; border-radius:999px; overflow:hidden;}
+.progress-fill{height:100%; border-radius:999px; background:linear-gradient(90deg,var(--gold),#ffd25f); transition:width .4s ease;}
+
+.section-label{font-size:13px; text-transform:uppercase; letter-spacing:.06em; font-weight:800; color:var(--ink-soft); margin:22px 0 10px 4px;}
+.period-title{font-size:17px; font-weight:800; margin:0; font-family:var(--font-modern); letter-spacing:-.01em;}
+.period-toggle{
+  width:100%; display:flex; align-items:center; justify-content:space-between;
+  padding:14px 6px; margin-top:14px; border-bottom:2px solid #ece5d4;
+}
+.period-current-tag{font-family:var(--font-modern); font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:.04em; background:var(--gold); color:#5a3d00; padding:3px 9px; border-radius:999px; margin-left:6px; vertical-align:middle;}
+.period-current-tag.acquis{background:var(--ok); color:#fff;}
+.chevron{font-size:20px; font-weight:800; color:var(--ink-soft); transition:transform .2s ease; transform:rotate(90deg);}
+.chevron.open{transform:rotate(-90deg);}
+
+.chapter-row{
+  display:flex; align-items:center; gap:14px; background:#fff; border-radius:18px; padding:13px 15px;
+  box-shadow:var(--shadow); margin-bottom:10px; position:relative;
+}
+.chapter-row.locked{opacity:.55;}
+.chapter-dot{
+  width:46px; height:46px; border-radius:14px; display:flex; align-items:center; justify-content:center;
+  font-weight:800; font-size:17px; color:#fff; flex-shrink:0;
+}
+.chapter-body{flex:1; min-width:0;}
+.chapter-name{font-weight:800; font-size:14.5px; line-height:1.25;}
+.chapter-meta{font-size:12px; color:var(--ink-soft); margin-top:3px; font-weight:600;}
+.chapter-state{font-size:20px; flex-shrink:0;}
+.stars-mini{font-size:11px; letter-spacing:1px;}
+
+.bottom-nav{
+  position:fixed; bottom:0; left:0; right:0; display:flex; justify-content:center; z-index:20;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.bottom-nav-inner{
+  width:100%; max-width:560px; background:#fff; display:flex; box-shadow:0 -6px 20px rgba(47,42,68,.12);
+  border-radius:22px 22px 0 0; overflow:hidden;
+}
+.nav-btn{flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; padding:11px 4px 9px; font-size:10.5px; font-weight:800; color:var(--ink-soft);}
+.nav-btn .ic{font-size:20px;}
+.nav-btn.active{color:var(--ink);}
+
+/* ---------- Chapter screen ---------- */
+.chapter-hero{border-radius:var(--radius); padding:22px 20px; color:#fff; margin-bottom:16px; box-shadow:var(--shadow-lg);}
+.chapter-hero .domain-tag{font-size:11px; text-transform:uppercase; letter-spacing:.08em; font-weight:800; opacity:.85; margin-bottom:6px;}
+.chapter-hero h2{font-size:22px; font-family:var(--font-modern); font-weight:800; letter-spacing:-.01em;}
+.block-card{
+  display:flex; align-items:center; gap:14px; background:#fff; border-radius:18px; padding:16px;
+  box-shadow:var(--shadow); margin-bottom:12px;
+}
+.block-ic{width:50px; height:50px; border-radius:15px; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; color:#fff;}
+.block-info{flex:1;}
+.block-name{font-weight:800; font-size:15.5px;}
+.block-score{font-size:12.5px; color:var(--ink-soft); font-weight:700; margin-top:2px;}
+.block-stars{font-size:14px; margin-top:4px;}
+.block-go{font-size:22px; color:#c9c3b4;}
+.block-card.disabled{opacity:.5;}
+
+/* ---------- Session ---------- */
+.session-top{display:flex; align-items:center; gap:10px; margin-bottom:16px;}
+.session-track{flex:1; height:10px; background:#efe9db; border-radius:999px; overflow:hidden;}
+.session-track i{display:block; height:100%; border-radius:999px; transition:width .3s ease;}
+.timer-chip{font-weight:800; font-size:13px; background:#fff; padding:6px 12px; border-radius:999px; box-shadow:var(--shadow); flex-shrink:0;}
+.count-chip{font-weight:800; font-size:13px; color:var(--ink-soft); background:#fff; padding:6px 12px; border-radius:999px; box-shadow:var(--shadow); flex-shrink:0;}
+.btn-continue{background:var(--ok); color:#fff;}
+.timer-chip.low{color:var(--bad);}
+.seance-tag{
+  display:inline-block; font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.06em;
+  background:#eee7d6; color:#8a7a44; padding:5px 11px; border-radius:999px; margin-bottom:10px;
+}
+.q-card{background:#fff; border-radius:var(--radius); padding:22px 20px; box-shadow:var(--shadow); min-height:220px;}
+.q-prompt{font-size:18px; font-weight:800; line-height:1.4; margin-bottom:18px;}
+.q-prompt-center{text-align:center; font-size:26px;}
+.q-sub{font-size:14px; color:var(--ink-soft); font-weight:600; margin-top:-10px; margin-bottom:16px;}
+.q-area{margin-bottom:6px;}
+
+.num-input-row{display:flex; align-items:center; gap:10px; justify-content:center; margin:18px 0 6px;}
+.num-input{
+  font-size:26px; font-weight:800; text-align:center; width:100%; max-width:220px; padding:14px 10px;
+  border-radius:16px; border:3px solid #e3ddd0; background:#faf7ef; color:var(--ink);
+}
+.num-input:focus{outline:none; border-color:var(--gold);}
+.unit-label{font-size:15px; font-weight:700; color:var(--ink-soft);}
+
+.choice-list{display:flex; flex-direction:column; gap:10px;}
+.choice-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+.choice{
+  background:#faf7ef; border:3px solid #efe9db; border-radius:16px; padding:14px 16px; font-weight:800;
+  font-size:16px; text-align:center;
+}
+.choice.selected{border-color:var(--ink); background:#fff;}
+.choice.correct{border-color:var(--ok); background:#e9f9ee; color:var(--ok-dark,#237a44);}
+.choice.wrong{border-color:var(--bad); background:#fdecec; color:#a11c33;}
+
+.tf-row{display:flex; gap:12px;}
+.tf-btn{flex:1; padding:20px; border-radius:16px; font-weight:800; font-size:17px; background:#faf7ef; border:3px solid #efe9db;}
+.tf-btn.selected{border-color:var(--ink); background:#fff;}
+.tf-btn.correct{border-color:var(--ok); background:#e9f9ee;}
+.tf-btn.wrong{border-color:var(--bad); background:#fdecec;}
+
+.chip{display:inline-flex; align-items:center; padding:10px 14px; border-radius:12px; background:#faf7ef; border:2px solid #efe9db; font-weight:800; font-size:14px; margin:4px;}
+.chip.picked{opacity:.35; pointer-events:none;}
+.chip.selected{border-color:var(--ink); background:#fff; box-shadow:0 0 0 2px var(--ink) inset;}
+.chip.correctchip{border-color:var(--ok); background:#e9f9ee;}
+.chip.wrongchip{border-color:var(--bad); background:#fdecec;}
+.chip-wrap{display:flex; flex-wrap:wrap; margin:0 -4px;}
+.slots-wrap{display:flex; flex-wrap:wrap; gap:8px; min-height:44px; padding:10px; background:#f2ede0; border-radius:14px; margin-bottom:14px;}
+
+.line-svg{width:100%; height:auto; margin:10px 0;}
+.order-list{display:flex; flex-direction:column; gap:8px;}
+.order-slot{display:flex; align-items:center; gap:10px; background:#faf7ef; border:2px dashed #d8d0bb; border-radius:14px; padding:10px 14px; min-height:44px; font-weight:800;}
+.order-slot .num{width:22px; height:22px; border-radius:50%; background:var(--ink); color:#fff; font-size:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+.order-pool{display:flex; flex-wrap:wrap; gap:8px; margin-top:14px;}
+
+.clock-face{width:180px; height:180px; margin:8px auto 14px; position:relative;}
+
+.feedback-bar{
+  position:fixed; left:0; right:0; bottom:0; display:flex; justify-content:center; z-index:30;
+  transform:translateY(110%); transition:transform .3s ease;
+}
+.feedback-bar.show{transform:translateY(0);}
+.feedback-inner{
+  width:100%; max-width:640px; padding:18px 20px calc(18px + env(safe-area-inset-bottom));
+  border-radius:26px 26px 0 0; box-shadow:0 -10px 30px rgba(0,0,0,.15);
+}
+.feedback-inner.ok{background:#e6f8ec;}
+.feedback-inner.bad{background:#fdeaec;}
+.feedback-head{display:flex; align-items:center; gap:10px; font-weight:800; font-size:17px; margin-bottom:6px;}
+.feedback-head.ok{color:#1f7a42;}
+.feedback-head.bad{color:#a11c33;}
+.feedback-explain{font-size:13.5px; color:var(--ink-soft); margin-bottom:14px; font-weight:600;}
+
+.confetti-piece{position:fixed; top:-10px; z-index:50; border-radius:2px; pointer-events:none;}
+
+/* ---------- Result ---------- */
+.result-hero{text-align:center; padding:30px 10px 10px;}
+.result-stars{font-size:46px; margin:10px 0 6px; letter-spacing:6px;}
+.result-pct{font-size:40px; font-weight:800;}
+.result-label{color:var(--ink-soft); font-weight:700; font-size:14px; margin-bottom:20px;}
+.err-row{display:flex; justify-content:space-between; align-items:center; padding:12px 4px; border-bottom:1px solid #f0ebdd; font-size:14px;}
+.err-row:last-child{border-bottom:none;}
+
+/* ---------- Rewards / progression ---------- */
+.balance-card{background:linear-gradient(135deg,var(--gold),#ffcf5c); border-radius:var(--radius); padding:22px; text-align:center; box-shadow:var(--shadow-lg); margin-bottom:18px;}
+.balance-num{font-size:40px; font-weight:800; color:#5a3d00;}
+.balance-lbl{font-weight:800; color:#7a5a10; font-size:13px; text-transform:uppercase; letter-spacing:.05em;}
+.reward-row{display:flex; align-items:center; gap:12px; background:#fff; border-radius:16px; padding:13px 15px; box-shadow:var(--shadow); margin-bottom:10px; touch-action:pan-y;}
+.reward-row.dragging{box-shadow:var(--shadow-lg); z-index:5; position:relative; touch-action:none;}
+.drag-handle{display:flex; flex-shrink:0; cursor:grab; touch-action:none; padding:4px; margin:-4px;}
+.drag-handle:active{cursor:grabbing;}
+.reward-name{flex:1; font-weight:800; font-size:14.5px;}
+.reward-cost{font-weight:800; color:var(--gold-dark); font-size:14px;}
+.reward-req{font-size:10.5px; color:var(--ink-soft); font-weight:700; display:flex; align-items:center; gap:3px; margin-top:2px;}
+.small-btn{display:inline-flex; align-items:center; gap:5px;}
+.small-btn{padding:9px 14px; border-radius:999px; font-weight:800; font-size:12.5px; background:var(--ink); color:#fff;}
+.small-btn[disabled]{background:#ddd7c7; color:#a29c8a;}
+.domain-bar-row{display:flex; align-items:center; gap:10px; margin-bottom:12px;}
+.domain-bar-row .lbl{width:110px; font-size:12.5px; font-weight:800; flex-shrink:0;}
+.domain-bar-track{flex:1; height:10px; background:#efe9db; border-radius:999px; overflow:hidden;}
+.domain-bar-fill{height:100%; border-radius:999px;}
+.stat-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;}
+.stat-box{background:#fff; border-radius:16px; padding:14px; box-shadow:var(--shadow); text-align:center;}
+.stat-box b{display:block; font-size:22px;}
+.stat-box span{font-size:11.5px; color:var(--ink-soft); font-weight:700;}
+
+.modal-bg{position:fixed; inset:0; background:rgba(20,18,30,.45); z-index:60; display:flex; align-items:flex-end; justify-content:center;}
+.modal-box{width:100%; max-width:560px; background:#fff; border-radius:24px 24px 0 0; padding:20px 20px calc(20px + env(safe-area-inset-bottom)); max-height:85vh; overflow:auto;}
+.field{margin-bottom:12px;}
+.field label{display:block; font-size:12.5px; font-weight:800; color:var(--ink-soft); margin-bottom:5px;}
+.field input{width:100%; padding:12px 14px; border-radius:12px; border:2px solid #e3ddd0; font-size:15px; font-weight:700;}
+.pin-row{display:flex; justify-content:center; gap:12px;}
+.pin-box{
+  width:52px; height:64px; border-radius:16px; border:2px solid #e3ddd0; background:#faf7ef;
+  font-size:26px; font-weight:800; text-align:center; color:var(--ink);
+}
+.pin-box:focus{outline:none; border-color:var(--nombres); background:#fff;}
+.pin-box-error{border-color:var(--bad); background:#fdecec; animation:pinshake .3s ease;}
+@keyframes pinshake{0%,100%{transform:translateX(0);} 25%{transform:translateX(-6px);} 75%{transform:translateX(6px);}}
+</style>
+</head>
+<body>
+<div id="app">
+
+<div id="screen-splash" class="screen active">
+  <div class="splash-badge" id="splash-badge-icon"></div>
+  <div class="splash-title">Maths CM2</div>
+  <div class="splash-sub">Nola s'entraîne !</div>
+  <div class="splash-loader"><i></i></div>
+</div>
+
+<div id="screen-home" class="screen"></div>
+<div id="screen-chapter" class="screen"></div>
+<div id="screen-session" class="screen"></div>
+<div id="screen-result" class="screen"></div>
+<div id="screen-rewards" class="screen"></div>
+<div id="screen-progression" class="screen"></div>
+
+<div id="feedback" class="feedback-bar"></div>
+<div id="modal-root"></div>
+
+<div class="bottom-nav" id="bottom-nav">
+  <div class="bottom-nav-inner">
+    <button class="nav-btn" data-nav="home"><span class="ic" data-icon="home"></span>Accueil</button>
+    <button class="nav-btn" data-nav="progression"><span class="ic" data-icon="chart"></span>Progrès</button>
+    <button class="nav-btn" data-nav="rewards"><span class="ic" data-icon="gift"></span>Récompenses</button>
+  </div>
+</div>
+
+</div>
+<script id="app-script">
+/* ================= ICONS ================= */
+var ICON_PATHS = {
+  home:'<path d="M4 11.5L12 4l8 7.5V20a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1V11.5Z" fill="{c}"/>',
+  chart:'<rect x="4" y="12" width="4" height="8" rx="1.5" fill="{c}"/><rect x="10" y="7" width="4" height="13" rx="1.5" fill="{c}"/><rect x="16" y="3" width="4" height="17" rx="1.5" fill="{c}"/>',
+  gift:'<rect x="4" y="10.5" width="16" height="9.5" rx="2" fill="{c}"/><rect x="4" y="7.5" width="16" height="3.4" rx="1.3" fill="{c2}"/><rect x="11" y="7.5" width="2" height="12.5" fill="#fff" opacity=".55"/><path d="M12 7.5c-.8-3.2-5.2-3-5 .3" stroke="{c2}" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M12 7.5c.8-3.2 5.2-3 5 .3" stroke="{c2}" stroke-width="1.8" fill="none" stroke-linecap="round"/>',
+  lock_closed:'<rect x="5" y="11" width="14" height="10" rx="3.5" fill="{c}"/><path d="M8 11V8a4 4 0 0 1 8 0v3" stroke="{c}" stroke-width="2.4" fill="none" stroke-linecap="round"/><circle cx="12" cy="16" r="1.6" fill="#fff"/>',
+  lock_open:'<rect x="5" y="11" width="14" height="10" rx="3.5" fill="{c}"/><path d="M8 11V8a4 4 0 0 1 7.6-1.6" stroke="{c}" stroke-width="2.4" fill="none" stroke-linecap="round"/><circle cx="12" cy="16" r="1.6" fill="#fff"/>',
+  trophy:'<path d="M7 4h10v5a5 5 0 0 1-10 0V4Z" fill="{c}"/><path d="M7 5.2H4.3v1.8a3.7 3.7 0 0 0 3.7 3.7" stroke="{c}" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M17 5.2h2.7V7A3.7 3.7 0 0 1 16 10.7" stroke="{c}" stroke-width="1.8" fill="none" stroke-linecap="round"/><rect x="10.3" y="13.5" width="3.4" height="3" fill="{c}"/><rect x="7" y="18" width="10" height="2.6" rx="1.3" fill="{c}"/>',
+  play:'<circle cx="12" cy="12" r="10" fill="{c}"/><path d="M9.8 8.1v7.8a.9.9 0 0 0 1.37.76l6.3-3.9a.9.9 0 0 0 0-1.53l-6.3-3.9A.9.9 0 0 0 9.8 8.1Z" fill="#fff"/>',
+  book:'<path d="M4 5.8A2.3 2.3 0 0 1 6.3 3.5H12v17H6.3A2.3 2.3 0 0 1 4 18.2V5.8Z" fill="#fff" opacity=".95"/><path d="M20 5.8a2.3 2.3 0 0 0-2.3-2.3H12v17h5.7A2.3 2.3 0 0 0 20 18.2V5.8Z" fill="#fff" opacity=".65"/>',
+  bolt:'<path d="M13 2 5 14h5l-1 8 9-13h-6l1-7Z" fill="#fff"/>',
+  calc:'<rect x="6.5" y="4.5" width="11" height="4.2" rx="1.1" fill="#fff"/><circle cx="8.2" cy="13" r="1.4" fill="#fff"/><circle cx="12" cy="13" r="1.4" fill="#fff"/><circle cx="15.8" cy="13" r="1.4" fill="#fff"/><circle cx="8.2" cy="17.4" r="1.4" fill="#fff"/><circle cx="12" cy="17.4" r="1.4" fill="#fff"/><circle cx="15.8" cy="17.4" r="1.4" fill="#fff"/>',
+  puzzle:'<path d="M20.5 11H19V7.5a2 2 0 0 0-2-2h-3.5V4.5C13.5 3.12 12.38 2 11 2S8.5 3.12 8.5 4.5v1H5a2 2 0 0 0-2 2v3.3h1c1.38 0 2.5 1.12 2.5 2.5S5.38 15.8 4 15.8H3V19a2 2 0 0 0 2 2h3.3v-1c0-1.38 1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5v1H17a2 2 0 0 0 2-2v-3.5h1c1.38 0 2.5-1.12 2.5-2.5S21.88 11 20.5 11Z" fill="#fff"/>',
+  flame:'<path d="M12 2c1.2 3.3-3 4.4-3 8.3a3 3 0 0 0 6 0c0-1-.6-1.8-.6-1.8 1.9 1 3.1 3 3.1 5.1a5.5 5.5 0 0 1-11 0C6.5 8 11 6.8 12 2Z" fill="{c}"/>',
+  calendar:'<rect x="4" y="5" width="16" height="15" rx="2.6" fill="{c}"/><path d="M4 9.2h16" stroke="{c2}" stroke-width="1.6"/><rect x="7.3" y="2.6" width="2" height="4" rx="1" fill="{c}"/><rect x="14.7" y="2.6" width="2" height="4" rx="1" fill="{c}"/><circle cx="8.2" cy="13" r="1.05" fill="#fff"/><circle cx="12" cy="13" r="1.05" fill="#fff"/><circle cx="15.8" cy="13" r="1.05" fill="#fff"/><circle cx="8.2" cy="16.4" r="1.05" fill="#fff"/><circle cx="12" cy="16.4" r="1.05" fill="#fff"/>',
+  star:'<path d="M12 2.7l2.8 5.7 6.3.6-4.7 4.3 1.3 6.2L12 16.4l-5.7 3.1 1.3-6.2-4.7-4.3 6.3-.6L12 2.7Z" fill="{c}" stroke="{c}" stroke-width="1" stroke-linejoin="round"/>',
+  star_outline:'<path d="M12 2.7l2.8 5.7 6.3.6-4.7 4.3 1.3 6.2L12 16.4l-5.7 3.1 1.3-6.2-4.7-4.3 6.3-.6L12 2.7Z" fill="none" stroke="{c}" stroke-width="1.6" stroke-linejoin="round"/>',
+  close:'<path d="M6 6l12 12M18 6 6 18" stroke="{c}" stroke-width="2.6" stroke-linecap="round"/>',
+  back:'<path d="M15 5l-7 7 7 7" stroke="{c}" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
+  check_circle:'<circle cx="12" cy="12" r="10" fill="{c}"/><path d="M7.3 12.5l3 3 6.2-6.5" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
+  cross_circle:'<circle cx="12" cy="12" r="10" fill="{c}"/><path d="M8.3 8.3l7 7M15.3 8.3l-7 7" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>',
+  gear:'<path d="M12 8.3a3.7 3.7 0 1 0 0 7.4 3.7 3.7 0 0 0 0-7.4Z" fill="none" stroke="{c}" stroke-width="2"/><path d="M12 2.5v2.3M12 19.2v2.3M4.3 4.3l1.6 1.6M18.1 18.1l1.6 1.6M2.5 12h2.3M19.2 12h2.3M4.3 19.7l1.6-1.6M18.1 5.9l1.6-1.6" stroke="{c}" stroke-width="2" stroke-linecap="round"/>',
+  hourglass:'<path d="M6.5 3h11M6.5 21h11M7.5 3c0 5.5 9 5.5 9 0M7.5 21c0-5.5 9-5.5 9 0" stroke="{c}" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
+  thumb:'<path d="M7.3 21H4.3V11h3v10Z" fill="{c}"/><path d="M9.3 11l1.8-6.4c1.5 0 2.6 1.3 2.1 2.7L12.6 9h5.8c1.3 0 2.1 1.3 1.7 2.5l-2 6c-.3 1-1.2 1.6-2.2 1.6H9.3V11Z" fill="{c}"/>',
+  heart:'<path d="M12 20.2s-7.3-4.6-9.6-9.2A5.1 5.1 0 0 1 12 6.3a5.1 5.1 0 0 1 9.6 4.7c-2.3 4.6-9.6 9.2-9.6 9.2Z" fill="{c}"/>',
+  seedling:'<path d="M12 21v-7.3" stroke="{c}" stroke-width="2.2" stroke-linecap="round"/><path d="M12 13.5c0-4.1-3.1-6.3-7.2-6.3-.2 4.3 3 6.3 7.2 6.3Z" fill="{c}"/><path d="M12 12c0-4.1 3.1-6.3 7.2-6.3.2 4.3-3 6.3-7.2 6.3Z" fill="{c}"/>',
+  replay:'<path d="M4.5 12a7.5 7.5 0 0 1 12.8-5.3M19.5 12a7.5 7.5 0 0 1-12.8 5.3" stroke="{c}" stroke-width="2.3" fill="none" stroke-linecap="round"/><path d="M16.6 3.2v4h-4M7.4 20.8v-4h4" stroke="{c}" stroke-width="2.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
+  check_small:'<path d="M5 13l4 4 10-10" stroke="{c}" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
+  trash:'<path d="M5 7h14M9.5 7V5.3A1.3 1.3 0 0 1 10.8 4h2.4a1.3 1.3 0 0 1 1.3 1.3V7M7 7l.8 12.2A2 2 0 0 0 9.8 21h4.4a2 2 0 0 0 2-1.8L17 7" stroke="{c}" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
+  grip:'<circle cx="9" cy="6" r="1.6" fill="{c}"/><circle cx="15" cy="6" r="1.6" fill="{c}"/><circle cx="9" cy="12" r="1.6" fill="{c}"/><circle cx="15" cy="12" r="1.6" fill="{c}"/><circle cx="9" cy="18" r="1.6" fill="{c}"/><circle cx="15" cy="18" r="1.6" fill="{c}"/>',
+  ruler:'<path d="M4.5 15.8 15.8 4.5l3.7 3.7L8.2 19.5l-3.7-3.7Z" fill="{c}" stroke="{c2}" stroke-width="1.4" stroke-linejoin="round"/><path d="M8.6 15.4 6.9 13.7M11.1 12.9 9.4 11.2M13.6 10.4l-1.7-1.7" stroke="{c2}" stroke-width="1.3" stroke-linecap="round"/>'
+};
+function icon(name, size, color, color2){
+  var raw = ICON_PATHS[name] || "";
+  raw = raw.split("{c2}").join(color2||color||"currentColor").split("{c}").join(color||"currentColor");
+  return '<svg viewBox="0 0 24 24" width="'+size+'" height="'+size+'" style="display:block">'+raw+'</svg>';
+}
+
+/* ================= CONTENT ================= */
+var CHILD_NAME = "Nola";
+
+/* ---- exercise number variation (replay = new numbers, same method) ---- */
+function ri(min,max){ return min + Math.floor(Math.random()*(max-min+1)); }
+function varyAdd2(maxA,maxB){ return function(){ var a=ri(2,maxA), b=ri(2,maxB); return {prompt:a+" + "+b, answer:a+b}; }; }
+function varyAddMissing(maxA,maxAns){ return function(){ var a=ri(2,maxA), ans=ri(2,maxAns); return {prompt:a+" + ? = "+(a+ans), answer:ans}; }; }
+function varySomme(maxA,maxB){ return function(){ var a=ri(2,maxA), b=ri(2,maxB); return {prompt:"Quelle est la somme de "+a+" et "+b+" ?", answer:a+b}; }; }
+function varySub(baseMin,baseMax,ansMax){ return function(){ var a=ri(baseMin,baseMax); var ans=ri(2,Math.min(ansMax,a-2)); return {prompt:a+" − "+(a-ans), answer:ans}; }; }
+function varyDiff(baseMin,baseMax,ansMax){ return function(){ var a=ri(baseMin,baseMax); var ans=ri(2,Math.min(ansMax,a-2)); return {prompt:"Quelle est la différence entre "+a+" et "+(a-ans)+" ?", answer:ans}; }; }
+function varyAddTo(maxA,maxAns){ return function(){ var a=ri(2,maxA), ans=ri(2,maxAns); return {prompt:"Combien ajouter à "+a+" pour obtenir "+(a+ans)+" ?", answer:ans}; }; }
+function varyMult2(maxA,maxB){ return function(){ var a=ri(2,maxA), b=ri(2,maxB); return {prompt:a+" × "+b, answer:a*b}; }; }
+function varyMultMissingLast(maxA,maxX){ return function(){ var a=ri(2,maxA), x=ri(2,maxX); return {prompt:a+" × ? = "+(a*x), answer:x}; }; }
+function varyMultMissingFirst(maxB,maxX){ return function(){ var b=ri(2,maxB), x=ri(2,maxX); return {prompt:"? × "+b+" = "+(x*b), answer:x}; }; }
+function varyMultZero(maxA){ return function(){ var a=ri(2,maxA); return {prompt:a+" × 0", answer:0}; }; }
+function varyDansCombienDeFois(maxB,maxX){ return function(){ var b=ri(2,maxB), x=ri(2,maxX); return {prompt:"Dans "+(b*x)+", combien de fois "+b+" ?", answer:x}; }; }
+function varyCombienDeFoisDans(maxB,maxX){ return function(){ var b=ri(2,maxB), x=ri(2,maxX); return {prompt:"Combien de fois "+b+" dans "+(b*x)+" ?", answer:x}; }; }
+function varyMultZeroFirst(maxB){ return function(){ var b=ri(2,maxB); return {prompt:"? × "+b+" = 0", answer:0}; }; }
+function chronoWrap(fn){ return function(){ var r=fn(); return {prompt:"⏱ Calcul chrono : "+r.prompt, answer:r.answer}; }; }
+function varyPoseAdd2(){ return function(){ var a=ri(100,999), b=ri(1000,9999); return {prompt:"Pose et effectue : "+a+" + "+b, answer:a+b}; }; }
+function varyPoseAdd3(){ return function(){ var a=ri(1000,4999), b=ri(10,99), c=ri(1000,4999); return {prompt:"Pose et effectue : "+a+" + "+b+" + "+c, answer:a+b+c}; }; }
+function varyPoseSub(baseMin,baseMax,gapMin,gapMax){ return function(){ var a=ri(baseMin,baseMax); var b=ri(gapMin,Math.min(gapMax,a-10)); return {prompt:"Pose et effectue : "+a+" − "+b, answer:a-b}; }; }
+function varyEncadre1000(baseMin,baseMax){ return function(){ var base=ri(baseMin,baseMax)*1000, off=ri(1,999); var mid=base+off; return {prompt:"Encadre "+fmtNum(mid)+" par deux milliers consécutifs.", mid:mid, answerA:base, answerB:base+1000}; }; }
+function varyRangeRound1000(baseMin,baseMax){ return function(){ var v=ri(baseMin,baseMax)*1000; return {prompt:"Complète avec un nombre qui convient : "+fmtNum(v-1)+" < ? < "+fmtNum(v+1), min:v-1, max:v+1}; }; }
+function varyNumberLine(min,max,step){ return function(){ var n=Math.round((max-min)/step); var idx=ri(1,n-1); return {value:min+idx*step}; }; }
+
+var DOMAIN_META = {
+  nombres:   {label:"Nombres et Calculs", color:"var(--nombres)", dark:"var(--nombres-dark)", bg:"var(--nombres-bg)"},
+  grandeurs: {label:"Grandeurs et Mesures", color:"var(--grandeurs)", dark:"var(--grandeurs-dark)", bg:"var(--grandeurs-bg)"},
+  espace:    {label:"Espace et Géométrie", color:"var(--espace)", dark:"var(--espace-dark)", bg:"var(--espace-bg)"}
+};
+
+function chStub(id, title, domain, period){ return {id:id, title:title, domain:domain, period:period, blocks:null}; }
+
+var CH1_LECON = [
+  {id:"L1", type:"decomposition", prompt:"Assemble les étiquettes pour former le nombre 3 245.", target:"3 245",
+    correct:["3 milliers","2 centaines","4 dizaines","5 unités"],
+    distractors:["4 milliers","3 centaines","5 dizaines","2 unités"],
+    vary:function(){
+      var th=ri(2,9), h=ri(1,9), t=ri(1,9), u=ri(1,9);
+      var target = th*1000+h*100+t*10+u;
+      return {prompt:"Assemble les étiquettes pour former le nombre "+fmtNum(target)+".", target:fmtNum(target),
+        correct:[th+" milliers", h+" centaines", t+" dizaines", u+" unités"],
+        distractors:[(th<9?th+1:th-1)+" milliers", (h<9?h+1:h-1)+" centaines", (t<9?t+1:t-1)+" dizaines", (u<9?u+1:u-1)+" unités"]};
+    }},
+  {id:"L2", type:"numeric", prompt:"9 centaines = ? dizaines", answer:90,
+    vary:function(){ var a=ri(2,9); return {prompt:a+" centaines = ? dizaines", answer:a*10}; }},
+  {id:"L3", type:"numeric", prompt:"60 centaines = ? milliers", answer:6,
+    vary:function(){ var a=ri(1,9); return {prompt:(a*10)+" centaines = ? milliers", answer:a}; }},
+  {id:"L4", type:"numeric", prompt:"3 milliers = ? dizaines", answer:300,
+    vary:function(){ var a=ri(2,9); return {prompt:a+" milliers = ? dizaines", answer:a*100}; }},
+  {id:"L5", type:"numeric", prompt:"6 centaines = ? unités", answer:600,
+    vary:function(){ var a=ri(2,9); return {prompt:a+" centaines = ? unités", answer:a*100}; }},
+  {id:"L6", type:"mcq", prompt:"Écris en chiffres : 8 milliers 3 centaines 6 dizaines 5 unités.",
+    choices:["8365","8635","8356","8653"], answerIndex:0},
+  {id:"L7", type:"numeric", prompt:"(7 × 1000) + (4 × 10) + 3 = ?", answer:7043,
+    vary:function(){ var a=ri(2,9), b=ri(1,9), c=ri(1,9); return {prompt:"("+a+" × 1000) + ("+b+" × 10) + "+c+" = ?", answer:a*1000+b*10+c}; }},
+  {id:"L8", type:"numeric", prompt:"6000 + 200 + 90 + 8 = ?", answer:6298,
+    vary:function(){ var th=ri(2,9), h=ri(1,9), t=ri(1,9), u=ri(1,9); return {prompt:(th*1000)+" + "+(h*100)+" + "+(t*10)+" + "+u+" = ?", answer:th*1000+h*100+t*10+u}; }},
+  {id:"L9", type:"numeric", prompt:"2 centaines + 1 millier + 75 dizaines = ?", answer:1950,
+    vary:function(){ var cent=ri(1,9), mil=ri(1,9), diz=ri(10,99); return {prompt:cent+" centaines + "+mil+" millier + "+diz+" dizaines = ?", answer:cent*100+mil*1000+diz*10}; }},
+  {id:"L10", type:"numeric", prompt:"4238 = 42 centaines et ? unités", answer:38,
+    vary:function(){ var h=ri(10,99), rem=ri(1,99); return {prompt:(h*100+rem)+" = "+h+" centaines et ? unités", answer:rem}; }},
+  {id:"L11", type:"numeric", prompt:"Dans 9018, combien y a-t-il de dizaines ?", answer:901,
+    vary:function(){ var n=ri(1000,9999); return {prompt:"Dans "+n+", combien y a-t-il de dizaines ?", answer:Math.floor(n/10)}; }},
+  {id:"L12", type:"mcq", prompt:"Dans 5083, le chiffre 8 est le chiffre des dizaines. Dans 8723, le chiffre 8 est le chiffre des…",
+    choices:["unités","dizaines","centaines","milliers"], answerIndex:3},
+  {id:"L13", type:"mcq", prompt:"Sans poser l'opération, trouve rapidement le résultat de 99 × 63.",
+    choices:["9701","627","6427","6237"], answerIndex:3},
+  {id:"L14", type:"numeric", prompt:"Un fabricant de bougies produit 7845 bougies, emballées par boîtes de 100. Combien de boîtes seront complètement remplies ?", answer:78,
+    vary:function(){ var boxes=ri(20,99), rem=ri(1,99); return {prompt:"Un fabricant de bougies produit "+(boxes*100+rem)+" bougies, emballées par boîtes de 100. Combien de boîtes seront complètement remplies ?", answer:boxes}; }},
+  {id:"L15", type:"numeric", prompt:"Un fleuriste a reçu une livraison de 3487 roses. Il veut faire des bouquets de 10 roses. Combien de bouquets pourra-t-il faire ?", answer:348,
+    vary:function(){ var b=ri(100,400), rem=ri(1,9); return {prompt:"Un fleuriste a reçu une livraison de "+(b*10+rem)+" roses. Il veut faire des bouquets de 10 roses. Combien de bouquets pourra-t-il faire ?", answer:b}; }},
+  {id:"L16", type:"mcq", prompt:"Parmi ces nombres, lequel peut être encadré par 10 000 et 100 000 ?",
+    choices:["236795","1010000","9637","84328"], answerIndex:3},
+  {id:"L17", type:"range", prompt:"Complète avec un nombre qui convient : 69 999 < ? < 70 001", min:69999, max:70001, vary:varyRangeRound1000(2,900)},
+  {id:"L18", type:"compound2", prompt:"Encadre 20 490 par deux milliers consécutifs.", labelA:"<", labelB:"<", mid:20490, answerA:20000, answerB:21000, vary:varyEncadre1000(2,90)},
+  {id:"L19", type:"order", prompt:"Range ces nombres par ordre décroissant (touche-les du plus grand au plus petit).",
+    items:[903110,90627,903109,90801,905112,91000], direction:"desc"},
+  {id:"L20", type:"mcq", prompt:"Zoé a oublié le code secret de son téléphone. C'est un nombre à 6 chiffres. Le chiffre des centaines de milliers est plus grand que le chiffre des centaines. Le chiffre des dizaines est plus petit que le chiffre des dizaines de milliers. Quel est ce code ?",
+    choices:["928758","84733","843726","503718"], answerIndex:2},
+  {id:"L21", type:"numeric", prompt:"Écris en chiffres : deux-cent-mille-cent-cinquante-trois.", answer:200153},
+  {id:"L22", type:"mcq", prompt:"78 540 + 100 … 78 630 + 10 — quel signe convient ?", choices:["<",">","="], answerIndex:2},
+  {id:"L23", type:"compound2", prompt:"Encadre 700 008 par deux milliers consécutifs.", labelA:"<", labelB:"<", mid:700008, answerA:700000, answerB:701000, vary:varyEncadre1000(100,900)},
+  {id:"L24", type:"numeric", prompt:"Écris en chiffres : cinq-cent-trente-mille-dix.", answer:530010}
+];
+
+var CH1_JESAIS = {
+  title:"Je sais lire, écrire, comparer, ranger et encadrer les nombres entiers jusqu'à 999 999.",
+  rows:[
+    {q:"Le nombre cent-trois-mille-deux-cent-soixante-dix-neuf s'écrit…", choices:["100 3 000 179","103 1 279","103 279"], correct:[2]},
+    {q:"Le nombre 300 040 se lit…", choices:["trois-cent-mille-quarante","trois-cent-quarante","trois-mille-quarante"], correct:[0]},
+    {q:"1 centaine de milliers, c'est…", choices:["10 000 unités","100 milliers","10 dizaines de milliers"], correct:[1,2]},
+    {q:"71 milliers + 78 unités s'écrit…", choices:["7178","71078","71780"], correct:[1]},
+    {q:"Les nombres supérieurs à 67 891 sont…", choices:["230459","67799","68000"], correct:[0,2]},
+    {q:"Les nombres inférieurs à 104 687 sont…", choices:["97689","104700","101689"], correct:[0,2]},
+    {q:"Les nombres compris entre 10 000 et 100 000 sont…", choices:["101000","24561","90000"], correct:[1,2]},
+    {q:"Le nombre 20 496 est compris entre…", choices:["10 000 et 100 000","20 000 et 30 000","20 490 et 20 500"], correct:[0,1,2]}
+  ]
+};
+
+var CH1_FLASH = [
+  {id:"F1", type:"number_line", prompt:"Écris le nombre indiqué par la flèche.", min:14000, max:54000, step:10000, value:34000, vary:varyNumberLine(14000,54000,10000)},
+  {id:"F2", type:"number_line", prompt:"Écris le nombre indiqué par la flèche.", min:0, max:40000, step:10000, value:20000, vary:varyNumberLine(0,40000,10000)},
+  {id:"F3", type:"number_line", prompt:"Écris le nombre indiqué par la flèche.", min:4300, max:8300, step:1000, value:6300, vary:varyNumberLine(4300,8300,1000)},
+  {id:"F4", type:"number_line", prompt:"Écris le nombre indiqué par la flèche.", min:13800, max:14200, step:100, value:14000, vary:varyNumberLine(13800,14200,100)},
+  {id:"F5", type:"number_line", prompt:"Écris le nombre indiqué par la flèche.", min:0, max:60000, step:15000, value:30000, vary:varyNumberLine(0,60000,15000)}
+];
+
+function seanceTag(n){ return {seance:n}; }
+var CH1_CALCUL = [
+  Object.assign({id:"C1",type:"numeric",prompt:"8 + 7",answer:15,vary:varyAdd2(9,9)},seanceTag(1)),
+  Object.assign({id:"C2",type:"numeric",prompt:"9 + ? = 17",answer:8,vary:varyAddMissing(9,9)},seanceTag(1)),
+  Object.assign({id:"C3",type:"numeric",prompt:"13 − 7",answer:6,vary:varySub(10,18,9)},seanceTag(1)),
+  Object.assign({id:"C4",type:"numeric",prompt:"Combien ajouter à 6 pour obtenir 11 ?",answer:5,vary:varyAddTo(9,9)},seanceTag(1)),
+  Object.assign({id:"C5",type:"numeric",prompt:"Quelle est la somme de 8 et 5 ?",answer:13,vary:varySomme(9,9)},seanceTag(1)),
+  Object.assign({id:"C6",type:"numeric",prompt:"Quelle est la différence entre 15 et 9 ?",answer:6,vary:varyDiff(10,18,9)},seanceTag(1)),
+  Object.assign({id:"C7",type:"numeric",prompt:"4 × 4",answer:16,vary:varyMult2(9,9)},seanceTag(1)),
+  Object.assign({id:"C8",type:"numeric",prompt:"3 × ? = 24",answer:8,vary:varyMultMissingLast(9,9)},seanceTag(1)),
+  Object.assign({id:"C9",type:"numeric",prompt:"3 × 7",answer:21,vary:varyMult2(9,9)},seanceTag(1)),
+  Object.assign({id:"C10",type:"numeric",prompt:"9 × ? = 18",answer:2,vary:varyMultMissingLast(9,9)},seanceTag(1)),
+  Object.assign({id:"C11",type:"numeric",prompt:"9 × 5",answer:45,vary:varyMult2(9,9)},seanceTag(1)),
+  Object.assign({id:"C12",type:"numeric",prompt:"Dans 42, combien de fois 6 ?",answer:7,vary:varyDansCombienDeFois(9,9)},seanceTag(1)),
+  Object.assign({id:"C13",type:"numeric",prompt:"Dans 16, combien de fois 2 ?",answer:8,vary:varyDansCombienDeFois(9,9)},seanceTag(1)),
+  Object.assign({id:"C14",type:"numeric",prompt:"Dans 48, combien de fois 6 ?",answer:8,vary:varyDansCombienDeFois(9,9)},seanceTag(1)),
+  Object.assign({id:"C15",type:"numeric",prompt:"Dans 32, combien de fois 4 ?",answer:8,vary:varyDansCombienDeFois(9,9)},seanceTag(1)),
+  Object.assign({id:"C16",type:"numeric",prompt:"Dans 27, combien de fois 3 ?",answer:9,vary:varyDansCombienDeFois(9,9)},seanceTag(1)),
+  Object.assign({id:"C17",type:"numeric",prompt:"⏱ Calcul chrono : 4 × 9",answer:36,vary:chronoWrap(varyMult2(9,9))},seanceTag(1)),
+  Object.assign({id:"C18",type:"numeric",prompt:"⏱ Calcul chrono : 9 × ? = 27",answer:3,vary:chronoWrap(varyMultMissingLast(9,9))},seanceTag(1)),
+  Object.assign({id:"C19",type:"numeric",prompt:"⏱ Calcul chrono : ? × 5 = 40",answer:8,vary:chronoWrap(varyMultMissingFirst(9,9))},seanceTag(1)),
+  Object.assign({id:"C20",type:"numeric",prompt:"⏱ Calcul chrono : 6 × 6",answer:36,vary:chronoWrap(varyMult2(9,9))},seanceTag(1)),
+  Object.assign({id:"C21",type:"numeric",prompt:"⏱ Calcul chrono : 9 × 7",answer:63,vary:chronoWrap(varyMult2(9,9))},seanceTag(1)),
+  Object.assign({id:"C22",type:"numeric",prompt:"⏱ Calcul chrono : 7 × 10",answer:70,vary:chronoWrap(varyMult2(9,10))},seanceTag(1)),
+  Object.assign({id:"C23",type:"numeric",prompt:"⏱ Calcul chrono : 5 × ? = 50",answer:10,vary:chronoWrap(varyMultMissingLast(9,10))},seanceTag(1)),
+  Object.assign({id:"C24",type:"numeric",prompt:"⏱ Calcul chrono : 8 × 0",answer:0,vary:chronoWrap(varyMultZero(9))},seanceTag(1)),
+  Object.assign({id:"C25",type:"numeric",prompt:"⏱ Calcul chrono : 7 × 4",answer:28,vary:chronoWrap(varyMult2(9,9))},seanceTag(1)),
+  Object.assign({id:"C26",type:"numeric",prompt:"⏱ Calcul chrono : 6 × ? = 54",answer:9,vary:chronoWrap(varyMultMissingLast(9,9))},seanceTag(1)),
+  Object.assign({id:"C27",type:"numeric",prompt:"6 + 7",answer:13,vary:varyAdd2(9,9)},seanceTag(2)),
+  Object.assign({id:"C28",type:"numeric",prompt:"8 + ? = 13",answer:5,vary:varyAddMissing(9,9)},seanceTag(2)),
+  Object.assign({id:"C29",type:"numeric",prompt:"11 − 7",answer:4,vary:varySub(10,18,9)},seanceTag(2)),
+  Object.assign({id:"C30",type:"numeric",prompt:"Combien ajouter à 4 pour obtenir 12 ?",answer:8,vary:varyAddTo(9,9)},seanceTag(2)),
+  Object.assign({id:"C31",type:"numeric",prompt:"Quelle est la somme de 6 et 8 ?",answer:14,vary:varySomme(9,9)},seanceTag(2)),
+  Object.assign({id:"C32",type:"numeric",prompt:"Quelle est la différence entre 13 et 6 ?",answer:7,vary:varyDiff(10,18,9)},seanceTag(2)),
+  Object.assign({id:"C33",type:"numeric",prompt:"4 + 9",answer:13,vary:varyAdd2(9,9)},seanceTag(3)),
+  Object.assign({id:"C34",type:"numeric",prompt:"7 + ? = 14",answer:7,vary:varyAddMissing(9,9)},seanceTag(3)),
+  Object.assign({id:"C35",type:"numeric",prompt:"11 − 5",answer:6,vary:varySub(10,18,9)},seanceTag(3)),
+  Object.assign({id:"C36",type:"numeric",prompt:"Combien ajouter à 3 pour obtenir 11 ?",answer:8,vary:varyAddTo(9,9)},seanceTag(3)),
+  Object.assign({id:"C37",type:"numeric",prompt:"Quelle est la somme de 7 et 9 ?",answer:16,vary:varySomme(9,9)},seanceTag(3)),
+  Object.assign({id:"C38",type:"numeric",prompt:"Quelle est la différence entre 11 et 8 ?",answer:3,vary:varyDiff(10,18,9)},seanceTag(3)),
+  Object.assign({id:"C39",type:"numeric",prompt:"Un fleuriste prépare 9 bouquets de 7 roses chacun. Combien de roses utilisera-t-il au total ?",answer:63,
+    vary:function(){ var a=ri(3,9), b=ri(3,9); return {prompt:"Un fleuriste prépare "+a+" bouquets de "+b+" roses chacun. Combien de roses utilisera-t-il au total ?", answer:a*b}; }},seanceTag(3)),
+  Object.assign({id:"C40",type:"numeric",prompt:"Un enseignant doit ranger 36 livres sur des étagères de 6 livres chacune. Combien d'étagères va-t-il remplir ?",answer:6,
+    vary:function(){ var k=ri(3,9), q=ri(3,9); return {prompt:"Un enseignant doit ranger "+(k*q)+" livres sur des étagères de "+k+" livres chacune. Combien d'étagères va-t-il remplir ?", answer:q}; }},seanceTag(3)),
+  Object.assign({id:"C41",type:"numeric",prompt:"On veut répartir 42 enfants en équipes de 6 joueurs. Combien d'équipes va-t-on former ?",answer:7,
+    vary:function(){ var k=ri(3,7), q=ri(4,9); return {prompt:"On veut répartir "+(k*q)+" enfants en équipes de "+k+" joueurs. Combien d'équipes va-t-on former ?", answer:q}; }},seanceTag(3)),
+  Object.assign({id:"C42",type:"numeric",prompt:"On a acheté 9 paquets de biscuits. Chaque paquet contient 8 biscuits. Combien de biscuits y a-t-il en tout ?",answer:72,
+    vary:function(){ var a=ri(3,9), b=ri(3,9); return {prompt:"On a acheté "+a+" paquets de biscuits. Chaque paquet contient "+b+" biscuits. Combien de biscuits y a-t-il en tout ?", answer:a*b}; }},seanceTag(3)),
+  Object.assign({id:"C43",type:"numeric",prompt:"Des amis commandent 5 pizzas. Chaque pizza est découpée en 4 parts égales. Quel est le nombre total de parts ?",answer:20,
+    vary:function(){ var a=ri(2,8), b=[2,4,6,8][ri(0,3)]; return {prompt:"Des amis commandent "+a+" pizzas. Chaque pizza est découpée en "+b+" parts égales. Quel est le nombre total de parts ?", answer:a*b}; }},seanceTag(3)),
+  Object.assign({id:"C44",type:"numeric",prompt:"9 + 1",answer:10,vary:varyAdd2(9,9)},seanceTag(4)),
+  Object.assign({id:"C45",type:"numeric",prompt:"4 + ? = 7",answer:3,vary:varyAddMissing(9,9)},seanceTag(4)),
+  Object.assign({id:"C46",type:"numeric",prompt:"10 − 7",answer:3,vary:varySub(10,18,9)},seanceTag(4)),
+  Object.assign({id:"C47",type:"numeric",prompt:"Combien ajouter à 7 pour obtenir 15 ?",answer:8,vary:varyAddTo(9,9)},seanceTag(4)),
+  Object.assign({id:"C48",type:"numeric",prompt:"Quelle est la somme de 6 et 9 ?",answer:15,vary:varySomme(9,9)},seanceTag(4)),
+  Object.assign({id:"C49",type:"numeric",prompt:"Quelle est la différence entre 13 et 4 ?",answer:9,vary:varyDiff(10,18,9)},seanceTag(4)),
+  Object.assign({id:"C50",type:"numeric",prompt:"⏱ Calcul chrono : 8 × 4",answer:32,vary:chronoWrap(varyMult2(9,9))},seanceTag(4)),
+  Object.assign({id:"C51",type:"numeric",prompt:"⏱ Calcul chrono : 3 × 9",answer:27,vary:chronoWrap(varyMult2(9,9))},seanceTag(4)),
+  Object.assign({id:"C52",type:"numeric",prompt:"⏱ Calcul chrono : 7 × ? = 42",answer:6,vary:chronoWrap(varyMultMissingLast(9,9))},seanceTag(4)),
+  Object.assign({id:"C53",type:"numeric",prompt:"⏱ Calcul chrono : ? × 9 = 72",answer:8,vary:chronoWrap(varyMultMissingFirst(9,9))},seanceTag(4)),
+  Object.assign({id:"C54",type:"numeric",prompt:"⏱ Calcul chrono : 10 × 8",answer:80,vary:chronoWrap(varyMult2(10,9))},seanceTag(4)),
+  Object.assign({id:"C55",type:"numeric",prompt:"⏱ Calcul chrono : 7 × 7",answer:49,vary:chronoWrap(varyMult2(9,9))},seanceTag(4)),
+  Object.assign({id:"C56",type:"numeric",prompt:"⏱ Calcul chrono : 9 × ? = 54",answer:6,vary:chronoWrap(varyMultMissingLast(9,9))},seanceTag(4)),
+  Object.assign({id:"C57",type:"numeric",prompt:"⏱ Calcul chrono : 5 × ? = 35",answer:7,vary:chronoWrap(varyMultMissingLast(9,9))},seanceTag(4)),
+  Object.assign({id:"C58",type:"numeric",prompt:"⏱ Calcul chrono : ? × 9 = 0",answer:0,vary:chronoWrap(varyMultZeroFirst(9))},seanceTag(4)),
+  Object.assign({id:"C59",type:"numeric",prompt:"⏱ Calcul chrono : 6 × 8",answer:48,vary:chronoWrap(varyMult2(9,9))},seanceTag(4)),
+  Object.assign({id:"C60",type:"numeric",prompt:"Pose et effectue : 574 + 9725",answer:10299,vary:varyPoseAdd2()},seanceTag(5)),
+  Object.assign({id:"C61",type:"numeric",prompt:"Pose et effectue : 403 − 35",answer:368,vary:varyPoseSub(200,999,10,300)},seanceTag(5)),
+  Object.assign({id:"C62",type:"numeric",prompt:"Pose et effectue : 1647 + 14 + 4023",answer:5684,vary:varyPoseAdd3()},seanceTag(5)),
+  Object.assign({id:"C63",type:"numeric",prompt:"Pose et effectue : 3242 − 2254",answer:988,vary:varyPoseSub(1000,4999,500,3000)},seanceTag(5))
+];
+
+function fmtDec(n){ return (Math.round(n*10)/10).toString().replace(".",","); }
+var CH1_PROBLEME = [
+  {id:"P1", type:"numeric", prompt:"Un massif de fleurs est composé de 37 roses rouges et 15 roses jaunes. Combien de roses y a-t-il dans ce massif ?", answer:52,
+    vary:function(){ var a=ri(15,60), b=ri(10,40); return {prompt:"Un massif de fleurs est composé de "+a+" roses rouges et "+b+" roses jaunes. Combien de roses y a-t-il dans ce massif ?", answer:a+b}; }},
+  {id:"P2", type:"numeric", prompt:"Un fleuriste a préparé 36 bouquets de 13 roses. Combien de roses a-t-il utilisées ?", answer:468,
+    vary:function(){ var n=ri(10,40), k=ri(8,15); return {prompt:"Un fleuriste a préparé "+n+" bouquets de "+k+" roses. Combien de roses a-t-il utilisées ?", answer:n*k}; }},
+  {id:"P3", type:"numeric", prompt:"Un massif de 65 fleurs est composé de roses et de 18 tulipes. Combien de roses y a-t-il dans ce massif ?", answer:47,
+    vary:function(){ var r=ri(20,60), t=ri(10,30); return {prompt:"Un massif de "+(r+t)+" fleurs est composé de roses et de "+t+" tulipes. Combien de roses y a-t-il dans ce massif ?", answer:r}; }},
+  {id:"P4", type:"numeric", prompt:"Un fleuriste a reçu 84 roses. Il veut préparer des bouquets de 14 roses. Combien de bouquets peut-il préparer ?", answer:6,
+    vary:function(){ var k=ri(6,15), q=ri(4,9); return {prompt:"Un fleuriste a reçu "+(k*q)+" roses. Il veut préparer des bouquets de "+k+" roses. Combien de bouquets peut-il préparer ?", answer:q}; }},
+  {id:"P5", type:"numeric", prompt:"Une pizzéria a servi 528 pizzas au cours de la journée. 296 pizzas ont été servies à midi. Combien de pizzas ont été servies le soir ?", answer:232,
+    vary:function(){ var total=ri(300,900), midi=ri(100,total-100); return {prompt:"Une pizzéria a servi "+total+" pizzas au cours de la journée. "+midi+" pizzas ont été servies à midi. Combien de pizzas ont été servies le soir ?", answer:total-midi}; }},
+  {id:"P6", type:"numeric", prompt:"Une grenouille doit effectuer 14 sauts de 30 cm pour atteindre sa mare. Quelle distance la sépare de cette mare ?", answer:420, unit:"cm",
+    vary:function(){ var n=ri(8,20), d=ri(15,40); return {prompt:"Une grenouille doit effectuer "+n+" sauts de "+d+" cm pour atteindre sa mare. Quelle distance la sépare de cette mare ?", answer:n*d}; }},
+  {id:"P7", type:"numeric", prompt:"Lilou part faire une randonnée à vélo. Au départ, son compteur indique 5218 km. À son retour, il indique 5276 km. Quelle distance Lilou a-t-elle parcourue ?", answer:58, unit:"km",
+    vary:function(){ var depart=ri(1000,9000), dist=ri(20,150); return {prompt:"Lilou part faire une randonnée à vélo. Au départ, son compteur indique "+depart+" km. À son retour, il indique "+(depart+dist)+" km. Quelle distance Lilou a-t-elle parcourue ?", answer:dist}; }},
+  {id:"P8", type:"numeric", prompt:"Les poules de Madame Mimosa ont pondu 173 œufs. Elle range les œufs dans des boîtes de 6. Combien de boîtes de 6 œufs pourra-t-elle remplir complètement ?", answer:28,
+    vary:function(){ var boxes=ri(15,40), rem=ri(1,5); return {prompt:"Les poules de Madame Mimosa ont pondu "+(boxes*6+rem)+" œufs. Elle range les œufs dans des boîtes de 6. Combien de boîtes de 6 œufs pourra-t-elle remplir complètement ?", answer:boxes}; }},
+  {id:"P9", type:"numeric", prompt:"Une grenouille fait des sauts d'au plus 22 cm. Elle veut atteindre un moustique situé à 341 cm d'elle. Combien de sauts, au minimum, devra-t-elle effectuer ?", answer:16,
+    vary:function(){ var d=ri(15,30), k=ri(10,20); var c=ri(d*(k-1)+1, d*k); return {prompt:"Une grenouille fait des sauts d'au plus "+d+" cm. Elle veut atteindre un moustique situé à "+c+" cm d'elle. Combien de sauts, au minimum, devra-t-elle effectuer ?", answer:k}; }},
+  {id:"P10", type:"numeric", prompt:"Chaque matin, pour se rendre à l'école, Tom parcourt 1,7 km à pied, puis 5,4 km en bus. Quelle distance Tom parcourt-il chaque matin ?", answer:7.1, unit:"km",
+    vary:function(){ var a=ri(10,30)/10, b=ri(30,70)/10; return {prompt:"Chaque matin, pour se rendre à l'école, Tom parcourt "+fmtDec(a)+" km à pied, puis "+fmtDec(b)+" km en bus. Quelle distance Tom parcourt-il chaque matin ?", answer:Math.round((a+b)*10)/10}; }}
+];
+
+var CONTENT = {
+  periods:[
+    {id:1, chapters:[1,2,3,4,5,6,7]},
+    {id:2, chapters:[8,9,10,11,12,13,14]},
+    {id:3, chapters:[15,16,17,18,19,20]},
+    {id:4, chapters:[21,22,23,24,25,26,27]},
+    {id:5, chapters:[28,29,30,31,32,33,34,35]}
+  ],
+  chapters:{
+    1: {id:1, title:"Nombres entiers jusqu'à 999 999", domain:"nombres", period:1,
+      blocks:{
+        lecon:{label:"Leçon", exercises:CH1_LECON, recap:CH1_JESAIS},
+        flash:{label:"Flash Maths", chrono:true, timeLimit:20, exercises:CH1_FLASH},
+        calcul:{label:"Calcul", chrono:true, timeLimit:12, exercises:CH1_CALCUL},
+        probleme:{label:"Atelier problèmes", exercises:CH1_PROBLEME}
+      }},
+    2: chStub(2,"Aires (1)","grandeurs",1),
+    3: chStub(3,"Fractions (1)","nombres",1),
+    4: chStub(4,"Droites perpendiculaires","espace",1),
+    5: chStub(5,"Fractions (2)","nombres",1),
+    6: chStub(6,"Fractions décimales","nombres",1),
+    7: chStub(7,"Nombres décimaux (1)","nombres",1),
+    8: chStub(8,"Périmètres","grandeurs",2),
+    9: chStub(9,"Multiplication avec des nombres entiers","nombres",2),
+    10: chStub(10,"Division euclidienne","nombres",2),
+    11: chStub(11,"Droites parallèles","espace",2),
+    12: chStub(12,"Proportionnalité (1) : passage à l'unité","nombres",2),
+    13: chStub(13,"Multiplication et division d'un nombre décimal par 10, 100, 1000","nombres",2),
+    14: chStub(14,"Multiplication d'un nombre décimal par un nombre entier","nombres",2),
+    15: chStub(15,"Multiples et diviseurs","nombres",3),
+    16: chStub(16,"Grands nombres entiers : les millions","nombres",3),
+    17: chStub(17,"Aires (2)","grandeurs",3),
+    18: chStub(18,"Nombres décimaux (2) : repérage sur une demi-droite graduée","nombres",3),
+    19: chStub(19,"Proportionnalité (2) : pourcentages","nombres",3),
+    20: chStub(20,"Division décimale","nombres",3),
+    21: chStub(21,"Nombres décimaux (3) : comparaison, rangement, encadrement","nombres",4),
+    22: chStub(22,"Angles","grandeurs",4),
+    23: chStub(23,"Cercle et disque","espace",4),
+    24: chStub(24,"Grands nombres entiers : les milliards","nombres",4),
+    25: chStub(25,"Durées","grandeurs",4),
+    26: chStub(26,"Triangles","espace",4),
+    27: chStub(27,"Aires (3)","grandeurs",4),
+    28: chStub(28,"Quadrilatères","espace",5),
+    29: chStub(29,"Reproduction de figures","espace",5),
+    30: chStub(30,"Nombres décimaux (4)","nombres",5),
+    31: chStub(31,"Construction de figures","espace",5),
+    32: chStub(32,"Symétrie axiale","espace",5),
+    33: chStub(33,"Proportionnalité (3) : échelles","nombres",5),
+    34: chStub(34,"Solides","espace",5),
+    35: chStub(35,"Volumes et contenances","grandeurs",5)
+  }
+};
+
+/* ================= STORAGE / STATE ================= */
+var STORAGE_KEY = "mathscm2_v1_state";
+
+function todayKey(d){ d=d||new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function isoWeekKey(d){
+  d=d||new Date();
+  var dt=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
+  var day=(dt.getUTCDay()+6)%7; // 0=lundi
+  dt.setUTCDate(dt.getUTCDate()-day+3);
+  var firstThu=new Date(Date.UTC(dt.getUTCFullYear(),0,4));
+  var week=1+Math.round(((dt-firstThu)/86400000-3+((firstThu.getUTCDay()+6)%7))/7);
+  return dt.getUTCFullYear()+"-W"+week;
+}
+
+function defaultState(){
+  return {
+    progress:{}, // chapterId -> { lecon:{best:0}, flash:{...}, calcul:{...}, probleme:{...}, chapterRewarded:bool }
+    periodsRewarded:{},
+    streak:{count:0, lastDay:null},
+    time:{daily:{}, weekKey:isoWeekKey(), weekTotal:0},
+    stars:{balance:0, totalEarned:0},
+    rewards:{catalog:[
+      {id:"r1", name:"Choisir le film du vendredi soir", cost:5},
+      {id:"r2", name:"Un magazine", cost:7},
+      {id:"r3", name:"Un squishy", cost:15},
+      {id:"r4", name:"Un petit jouet", cost:20}
+    ], requests:[]},
+    greetIndex:{}
+  };
+}
+
+var STATE = loadState();
+function loadState(){
+  try{
+    var raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return defaultState();
+    var s = JSON.parse(raw);
+    var d = defaultState();
+    for(var k in d){ if(!(k in s)) s[k]=d[k]; }
+    if(s.time.weekKey !== isoWeekKey()){ s.time.weekKey = isoWeekKey(); s.time.weekTotal = 0; }
+    return s;
+  }catch(e){ return defaultState(); }
+}
+function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(STATE)); }
+
+function chapterProgress(id){
+  if(!STATE.progress[id]) STATE.progress[id] = {};
+  return STATE.progress[id];
+}
+function blockBest(chId, blockKey){
+  var p = chapterProgress(chId);
+  return (p[blockKey] && p[blockKey].best) || 0;
+}
+function chapterBlockKeys(ch){ return ch.blocks ? Object.keys(ch.blocks) : []; }
+function chapterMastered(ch){
+  if(!ch.blocks) return false;
+  var keys = chapterBlockKeys(ch);
+  for(var i=0;i<keys.length;i++){ if(blockBest(ch.id,keys[i]) < 80) return false; }
+  return true;
+}
+function chapterStarted(ch){
+  if(!ch.blocks) return false;
+  var keys = chapterBlockKeys(ch);
+  for(var i=0;i<keys.length;i++){ if(blockBest(ch.id,keys[i]) > 0) return true; }
+  return false;
+}
+function chapterUnlocked(ch){
+  var period = CONTENT.periods.find(function(p){return p.id===ch.period;});
+  var idx = period.chapters.indexOf(ch.id);
+  if(idx===0) return true;
+  var prevId = period.chapters[idx-1];
+  var prev = CONTENT.chapters[prevId];
+  return chapterMastered(prev);
+}
+function scoreToStars(pct){
+  if(pct<=0) return 0;
+  if(pct<50) return 1;
+  if(pct<80) return 2;
+  return 3;
+}
+
+function recordDayPlayed(){
+  var key = todayKey();
+  var s = STATE.streak;
+  if(s.lastDay === key) return;
+  if(s.lastDay){
+    var prev = new Date(s.lastDay+"T00:00:00");
+    var now = new Date(key+"T00:00:00");
+    var diffDays = Math.round((now-prev)/86400000);
+    s.count = (diffDays===1) ? s.count+1 : 1;
+  } else { s.count = 1; }
+  s.lastDay = key;
+}
+function addPlayTime(ms){
+  var key = todayKey();
+  STATE.time.daily[key] = (STATE.time.daily[key]||0) + ms;
+  if(STATE.time.weekKey !== isoWeekKey()){ STATE.time.weekKey = isoWeekKey(); STATE.time.weekTotal = 0; }
+  STATE.time.weekTotal += ms;
+  saveState();
+}
+
+/* ================= GREETINGS ================= */
+var GREETINGS = {
+  morning_week:[
+    "Bonjour {n}, j'espère que ta journée d'école t'a plein de belles choses à apprendre. On attaque la session du {j} ?",
+    "Coucou {n} ! Prête à faire chauffer les neurones avant l'école ?",
+    "Debout {n} ! Un petit tour de maths pour bien démarrer ce {j} ?"
+  ],
+  midi_week:[
+    "Bonjour {n}, bon appétit ! Une petite pause maths avant de repartir ?",
+    "Coucou {n} ! C'est l'heure de la pause déjeuner, on s'entraîne un peu ?"
+  ],
+  afternoon_week:[
+    "Bonjour {n}, comment se passe ton après-midi ? On s'entraîne un peu ?",
+    "Coucou {n} ! Une petite pause maths en cet après-midi de {j} ?"
+  ],
+  evening_week:[
+    "Bonsoir {n}, j'espère que ta journée d'école t'a appris plein de choses. On attaque la session du {j} ?",
+    "Coucou {n} ! Une petite session de maths avant de te reposer ce soir ?",
+    "Bonsoir {n} ! Prête pour ton entraînement du {j} ?"
+  ],
+  morning_wk:[
+    "Bonjour {n} ! Un bon petit-déjeuner puis un peu de maths ?",
+    "Coucou {n}, belle journée de {j} qui commence, on s'entraîne un peu ?"
+  ],
+  midi_wk:[
+    "Bonjour {n} ! Bon appétit, on s'entraîne un peu après le repas ?",
+    "Coucou {n}, journée de {j}, une petite pause maths avant ou après manger ?"
+  ],
+  afternoon_wk:[
+    "Bonjour {n} ! Un bel après-midi de {j}, parfait pour s'entraîner un peu.",
+    "Coucou {n} ! Une petite pause maths cet après-midi ?"
+  ],
+  evening_wk:[
+    "Bonsoir {n} ! Une petite session tranquille pour finir ce {j} ?",
+    "Coucou {n}, on termine ce {j} par un peu de maths ?"
+  ]
+};
+var DAYS_FR = ["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"];
+var MONTHS_FR = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+function fullDateFR(d){
+  d = d || new Date();
+  var day = DAYS_FR[d.getDay()];
+  return day.charAt(0).toUpperCase()+day.slice(1)+" "+d.getDate()+" "+MONTHS_FR[d.getMonth()]+" "+d.getFullYear();
+}
+function weekProgressColor(pct){
+  if(pct>=100) return "linear-gradient(90deg,#3fae62,#5fc97e)";
+  if(pct>=60) return "linear-gradient(90deg,#2f7fd6,#5aa3ec)";
+  if(pct>=25) return "linear-gradient(90deg,"+"#f2b632,#ffd25f)";
+  return "linear-gradient(90deg,#e4304f,#f0637d)";
+}
+function greetingMessage(){
+  var now = new Date();
+  var h = now.getHours();
+  var isWeekend = (now.getDay()===0 || now.getDay()===6);
+  var slot = h<12 ? "morning" : (h<14 ? "midi" : (h<18 ? "afternoon" : "evening"));
+  var key = slot + "_" + (isWeekend?"wk":"week");
+  var list = GREETINGS[key];
+  var dayKey = todayKey();
+  var idx = STATE.greetIndex[key];
+  if(idx===undefined){ idx = Math.floor(Math.random()*list.length); }
+  else if(STATE.greetIndex[key+"_day"] !== dayKey){ idx = (idx+1)%list.length; }
+  STATE.greetIndex[key] = idx;
+  STATE.greetIndex[key+"_day"] = dayKey;
+  saveState();
+  var msg = list[idx];
+  return msg.replace(/\{n\}/g,CHILD_NAME).replace(/\{j\}/g,DAYS_FR[now.getDay()]);
+}
+
+/* ================= ROUTER ================= */
+var ROUTE = {name:"home", params:{}};
+function go(name, params){
+  ROUTE = {name:name, params:params||{}};
+  var fb = document.getElementById("feedback");
+  if(fb) fb.classList.remove("show");
+  document.querySelectorAll(".screen").forEach(function(el){el.classList.remove("active");});
+  var el = document.getElementById("screen-"+name);
+  if(el){ el.classList.add("active"); }
+  window.scrollTo(0,0);
+  document.querySelectorAll(".nav-btn").forEach(function(b){
+    b.classList.toggle("active", b.dataset.nav===name);
+  });
+  RENDER[name] && RENDER[name](params||{});
+}
+document.querySelectorAll(".nav-btn").forEach(function(b){
+  b.addEventListener("click", function(){ clearInterval(Q_TIMER); go(b.dataset.nav); });
+});
+
+var RENDER = {};
+
+/* ================= HOME ================= */
+function currentPeriodId(){
+  for(var id=1; id<=35; id++){
+    if(!chapterMastered(CONTENT.chapters[id])) return CONTENT.chapters[id].period;
+  }
+  return 5;
+}
+var HOME_EXPANDED = null;
+
+function chapterAvgScore(ch){
+  var keys = chapterBlockKeys(ch).filter(function(k){ return blockBest(ch.id,k)>0; });
+  if(!keys.length) return null;
+  var sum = keys.reduce(function(a,k){ return a+blockBest(ch.id,k); },0);
+  return Math.round(sum/keys.length);
+}
+function chapterRowHtml(ch){
+  var unlocked = chapterUnlocked(ch);
+  var mastered = chapterMastered(ch);
+  var started = chapterStarted(ch);
+  var dm = DOMAIN_META[ch.domain];
+  var state = mastered ? icon("trophy",22,"#f2b632") : (started ? '<span class="block-go" style="font-size:26px;">›</span>' : (unlocked ? icon("lock_open",20,"#b7ab8f") : icon("lock_closed",20,"#c9c1ac")));
+  var avg = chapterAvgScore(ch);
+  var blockCount = ch.blocks ? chapterBlockKeys(ch).length : 0;
+  var metaText = !ch.blocks ? "Contenu à venir" : (mastered ? "Maîtrisé" : (unlocked ? (avg!==null ? avg+"% de réussite" : blockCount+" exercice"+(blockCount>1?"s":"")+" disponible"+(blockCount>1?"s":"")) : "Verrouillé"));
+  var h = '<div class="chapter-row '+(unlocked?"":"locked")+'" data-chapter="'+ch.id+'">';
+  h += '<div class="chapter-dot" style="background:'+dm.color+'">'+ch.id+'</div>';
+  h += '<div class="chapter-body"><div class="chapter-name">'+ch.title+'</div>';
+  h += '<div class="chapter-meta">'+metaText+'</div></div>';
+  h += '<div class="chapter-state">'+state+'</div></div>';
+  return h;
+}
+
+var WEEKLY_GOAL_MIN = 40;
+RENDER.home = function(){
+  var el = document.getElementById("screen-home");
+  var weekMin = Math.floor(STATE.time.weekTotal/60000);
+  var weekPct = Math.min(100, Math.round(weekMin/WEEKLY_GOAL_MIN*100));
+  var curPeriod = currentPeriodId();
+  if(HOME_EXPANDED===null){ HOME_EXPANDED = {}; HOME_EXPANDED[curPeriod] = true; }
+  var html = "";
+  html += '<div class="hello-card"><div class="hello-day">'+fullDateFR()+'</div>';
+  html += '<div class="hello-msg">'+greetingMessage()+'</div>';
+  html += '<div class="hello-stats">';
+  html += '<div class="pill">'+icon("calendar",16,"#fff",'rgba(255,255,255,.5)')+' '+STATE.streak.count+' j</div>';
+  html += '<div class="pill">'+icon("star",16,"#ffd25f")+' '+STATE.stars.balance+'</div>';
+  html += '</div></div>';
+
+  html += '<div class="card week-card"><div class="week-head"><b>Objectif de la semaine</b><span>'+weekMin+' / '+WEEKLY_GOAL_MIN+' min</span></div>';
+  html += '<div class="progress-track"><div class="progress-fill" style="width:'+weekPct+'%; background:'+weekProgressColor(weekPct)+'"></div></div></div>';
+
+  CONTENT.periods.forEach(function(period){
+    var expanded = !!HOME_EXPANDED[period.id];
+    var isCurrent = period.id===curPeriod;
+    var isComplete = period.chapters.every(function(cid){ return chapterMastered(CONTENT.chapters[cid]); });
+    var badge = isComplete ? '<span class="period-current-tag acquis">Acquis</span>' : (isCurrent ? '<span class="period-current-tag">En cours</span>' : '');
+    html += '<button class="period-toggle" data-period="'+period.id+'">';
+    html += '<span class="period-title" style="margin:0;">Période '+period.id+' '+badge+'</span>';
+    html += '<span class="chevron '+(expanded?"open":"")+'">›</span></button>';
+    if(expanded){
+      html += '<div class="home-grid">';
+      period.chapters.forEach(function(cid){ html += chapterRowHtml(CONTENT.chapters[cid]); });
+      html += '</div>';
+    }
+  });
+  el.innerHTML = html;
+  el.querySelectorAll(".period-toggle").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var pid = parseInt(btn.dataset.period,10);
+      HOME_EXPANDED[pid] = !HOME_EXPANDED[pid];
+      RENDER.home();
+    });
+  });
+  el.querySelectorAll(".chapter-row").forEach(function(row){
+    row.addEventListener("click", function(){
+      var cid = parseInt(row.dataset.chapter,10);
+      var ch = CONTENT.chapters[cid];
+      if(!chapterUnlocked(ch)) return;
+      go("chapter",{chapterId:cid});
+    });
+  });
+};
+
+/* ================= CHAPTER ================= */
+var BLOCK_ICONS = {lecon:icon("book",26), flash:icon("bolt",26), calcul:icon("calc",26), probleme:icon("puzzle",22)};
+RENDER.chapter = function(params){
+  var ch = CONTENT.chapters[params.chapterId];
+  var dm = DOMAIN_META[ch.domain];
+  var el = document.getElementById("screen-chapter");
+  var html = "";
+  html += '<div class="top-row"><button class="icon-btn" id="back-home">'+icon("back",20,"#2f2a44")+'</button><div class="spacer"></div></div>';
+  html += '<div class="chapter-hero" style="background:'+dm.color+'">';
+  html += '<div class="domain-tag">'+dm.label+'</div><h2>'+ch.title+'</h2></div>';
+
+  if(!ch.blocks){
+    html += '<div class="card" style="text-align:center; padding:34px 18px;">';
+    html += '<div style="margin-bottom:10px; display:flex; justify-content:center;">'+icon("hourglass",40,"#c9c1ac")+'</div>';
+    html += '<b>Contenu à venir</b><p style="color:var(--ink-soft); font-weight:600; margin-top:6px; font-size:13.5px;">Ce chapitre sera ajouté dès que les photos du manuel seront envoyées.</p></div>';
+  } else {
+    Object.keys(ch.blocks).forEach(function(bk){
+      var block = ch.blocks[bk];
+      var best = blockBest(ch.id, bk);
+      var stars = scoreToStars(best);
+      html += '<div class="block-card" data-block="'+bk+'">';
+      html += '<div class="block-ic" style="background:'+dm.color+'">'+BLOCK_ICONS[bk]+'</div>';
+      html += '<div class="block-info"><div class="block-name">'+block.label+'</div>';
+      html += '<div class="block-score">'+(best>0? "Meilleur score : "+best+"%" : "À toi de jouer !")+'</div>';
+      html += '<div class="block-stars">'+starString(stars)+'</div></div>';
+      html += '<div class="block-go">›</div></div>';
+    });
+  }
+  el.innerHTML = html;
+  document.getElementById("back-home").addEventListener("click", function(){ go("home"); });
+  el.querySelectorAll(".block-card").forEach(function(card){
+    card.addEventListener("click", function(){
+      startSession(ch.id, card.dataset.block, false);
+    });
+  });
+};
+function starString(n){
+  var s = '<span style="display:inline-flex; gap:2px; vertical-align:middle;">';
+  for(var i=0;i<3;i++) s += (i<n? icon("star",16,"#ffd25f") : icon("star_outline",16,"#d9d2c0"));
+  s += '</span>';
+  return s;
+}
+
+/* ================= SESSION ENGINE ================= */
+var SESSION = null;
+var Q_CHECK = null;
+var Q_TIMER = null;
+
+function buildBlockItems(ch, blockKey){
+  var block = ch.blocks[blockKey];
+  var items = block.exercises.map(function(e){ return Object.assign({},e); });
+  if(block.recap){
+    block.recap.rows.forEach(function(row,i){
+      items.push({id:"JS"+i, type:"mcq_multi", prompt:row.q, choices:row.choices, correctSet:row.correct, recap:true});
+    });
+  }
+  return items;
+}
+
+function startSession(chapterId, blockKey, reviewMode){
+  var ch = CONTENT.chapters[chapterId];
+  var block = ch.blocks[blockKey];
+  var all = buildBlockItems(ch, blockKey);
+  var items = all;
+  if(reviewMode){
+    var prog = chapterProgress(chapterId);
+    var lastErr = (prog[blockKey] && prog[blockKey].lastErrors) || [];
+    items = all.filter(function(it){ return lastErr.indexOf(it.id)>=0; });
+    if(items.length===0) items = all;
+  }
+  items = items.map(function(it){ return it.vary ? Object.assign({}, it, it.vary()) : it; });
+  SESSION = {
+    chapterId:chapterId, blockKey:blockKey, chrono:!!block.chrono, timeLimit:block.timeLimit||15,
+    items:items, idx:0, correctCount:0, errors:[], startedAt:Date.now(), reviewMode:!!reviewMode
+  };
+  go("session",{});
+}
+
+RENDER.session = function(){
+  renderQuestion();
+};
+
+function currentDomainColor(){
+  var ch = CONTENT.chapters[SESSION.chapterId];
+  return DOMAIN_META[ch.domain].color;
+}
+
+var SEANCE_LABEL = {1:"Séance 1",2:"Séance 2",3:"Séance 3",4:"Séance 4",5:"Poser les opérations"};
+function renderQuestion(){
+  clearInterval(Q_TIMER);
+  var el = document.getElementById("screen-session");
+  var item = SESSION.items[SESSION.idx];
+  var color = currentDomainColor();
+  var pct = Math.round((SESSION.idx)/SESSION.items.length*100);
+  var html = '<div class="session-wrap"><div class="top-row"><button class="icon-btn" id="quit-session">'+icon("close",18,"#2f2a44")+'</button>';
+  html += '<div class="session-track"><i style="width:'+pct+'%; background:'+color+'"></i></div>';
+  html += '<div class="count-chip">'+(SESSION.idx+1)+' / '+SESSION.items.length+'</div>';
+  if(SESSION.chrono) html += '<div class="timer-chip" id="timer-chip">'+SESSION.timeLimit+'s</div>';
+  html += '</div>';
+  if(item.seance) html += '<div class="seance-tag">'+(SEANCE_LABEL[item.seance]||("Séance "+item.seance))+'</div>';
+  var promptCentered = SESSION.blockKey==="calcul" && item.prompt.length<=45;
+  html += '<div class="q-card"><div class="q-prompt'+(promptCentered?" q-prompt-center":"")+'">'+item.prompt+'</div><div class="q-area" id="q-area"></div></div>';
+  html += '<div style="height:16px"></div><button class="btn btn-primary btn-block" id="q-validate">Valider</button></div>';
+  el.innerHTML = html;
+  document.getElementById("quit-session").addEventListener("click", quitSession);
+  document.getElementById("q-validate").addEventListener("click", function(){ submitAnswer(); });
+  renderExerciseBody(document.getElementById("q-area"), item);
+
+  if(SESSION.chrono){
+    var remaining = SESSION.timeLimit;
+    var chip = document.getElementById("timer-chip");
+    Q_TIMER = setInterval(function(){
+      remaining--;
+      if(chip){ chip.textContent = remaining+"s"; if(remaining<=5) chip.classList.add("low"); }
+      if(remaining<=0){ clearInterval(Q_TIMER); submitAnswer(true); }
+    },1000);
+  }
+}
+
+function quitSession(){
+  clearInterval(Q_TIMER);
+  go("chapter",{chapterId:SESSION.chapterId});
+}
+
+function renderExerciseBody(container, item){
+  Q_CHECK = function(){ return {correct:false}; };
+  if(item.type==="numeric"){
+    var step = (item.answer % 1 !== 0) ? "0.1" : "1";
+    container.innerHTML = '<div class="num-input-row"><input type="number" step="'+step+'" inputmode="decimal" class="num-input" id="numin" placeholder="?"> '+(item.unit?'<span class="unit-label">'+item.unit+'</span>':'')+'</div>';
+    var inp = document.getElementById("numin");
+    setTimeout(function(){inp.focus();},50);
+    inp.addEventListener("keydown",function(e){ if(e.key==="Enter") submitAnswer(); });
+    Q_CHECK = function(){
+      var v = parseFloat((inp.value||"").replace(",","."));
+      var ok = !isNaN(v) && Math.abs(v-item.answer)<0.001;
+      return {correct:ok, explain:"La bonne réponse était "+fmtNum(item.answer)+(item.unit?" "+item.unit:"")+"."};
+    };
+  }
+  else if(item.type==="range"){
+    container.innerHTML = '<div class="num-input-row"><input type="number" inputmode="numeric" class="num-input" id="numin" placeholder="?"></div>';
+    var inp2 = document.getElementById("numin");
+    setTimeout(function(){inp2.focus();},50);
+    inp2.addEventListener("keydown",function(e){ if(e.key==="Enter") submitAnswer(); });
+    Q_CHECK = function(){
+      var v = parseFloat(inp2.value);
+      var ok = !isNaN(v) && v>item.min && v<item.max;
+      return {correct:ok, explain:"Il fallait un nombre strictement compris entre "+fmtNum(item.min)+" et "+fmtNum(item.max)+"."};
+    };
+  }
+  else if(item.type==="compound2"){
+    container.innerHTML = '<div style="text-align:center; font-weight:800; font-size:20px; margin:14px 0 6px;">'+item.labelA+' '+fmtNum(item.mid)+' '+item.labelB+'</div>'+
+      '<div class="num-input-row"><input type="number" class="num-input" id="numinA" style="max-width:130px" placeholder="?"> <span style="font-weight:800;">et</span> <input type="number" class="num-input" id="numinB" style="max-width:130px" placeholder="?"></div>';
+    Q_CHECK = function(){
+      var a = parseFloat(document.getElementById("numinA").value);
+      var b = parseFloat(document.getElementById("numinB").value);
+      var ok = a===item.answerA && b===item.answerB;
+      return {correct:ok, explain:"La bonne réponse était "+fmtNum(item.answerA)+" et "+fmtNum(item.answerB)+"."};
+    };
+  }
+  else if(item.type==="mcq"){
+    var html = '<div class="choice-list">';
+    item.choices.forEach(function(c,i){ html += '<div class="choice" data-i="'+i+'">'+c+'</div>'; });
+    html += '</div>';
+    container.innerHTML = html;
+    var sel = -1;
+    container.querySelectorAll(".choice").forEach(function(c){
+      c.addEventListener("click", function(){
+        container.querySelectorAll(".choice").forEach(function(x){x.classList.remove("selected");});
+        c.classList.add("selected"); sel = parseInt(c.dataset.i,10);
+      });
+    });
+    Q_CHECK = function(){
+      var ok = sel === item.answerIndex;
+      container.querySelectorAll(".choice").forEach(function(c){
+        var i = parseInt(c.dataset.i,10);
+        if(i===item.answerIndex) c.classList.add("correct");
+        else if(i===sel) c.classList.add("wrong");
+      });
+      return {correct:ok, explain:"La bonne réponse était : "+item.choices[item.answerIndex]+"."};
+    };
+  }
+  else if(item.type==="mcq_multi"){
+    var html2 = '<div class="choice-list">';
+    item.choices.forEach(function(c,i){ html2 += '<div class="choice" data-i="'+i+'">'+c+'</div>'; });
+    html2 += '</div><div class="q-sub" style="margin-top:12px">Plusieurs réponses sont parfois possibles.</div>';
+    container.innerHTML = html2;
+    var picked = [];
+    container.querySelectorAll(".choice").forEach(function(c){
+      c.addEventListener("click", function(){
+        var i = parseInt(c.dataset.i,10);
+        var p = picked.indexOf(i);
+        if(p>=0){ picked.splice(p,1); c.classList.remove("selected"); }
+        else { picked.push(i); c.classList.add("selected"); }
+      });
+    });
+    Q_CHECK = function(){
+      var a = picked.slice().sort();
+      var b = item.correctSet.slice().sort();
+      var ok = a.length===b.length && a.every(function(v,i){return v===b[i];});
+      container.querySelectorAll(".choice").forEach(function(c){
+        var i = parseInt(c.dataset.i,10);
+        if(item.correctSet.indexOf(i)>=0) c.classList.add("correct");
+        else if(picked.indexOf(i)>=0) c.classList.add("wrong");
+      });
+      return {correct:ok, explain:"Bonne(s) réponse(s) : "+item.correctSet.map(function(i){return item.choices[i];}).join(", ")+"."};
+    };
+  }
+  else if(item.type==="true_false"){
+    container.innerHTML = '<div class="tf-row"><button class="tf-btn" data-v="1">Vrai</button><button class="tf-btn" data-v="0">Faux</button></div>';
+    var selv = null;
+    container.querySelectorAll(".tf-btn").forEach(function(b){
+      b.addEventListener("click", function(){
+        container.querySelectorAll(".tf-btn").forEach(function(x){x.classList.remove("selected");});
+        b.classList.add("selected"); selv = b.dataset.v==="1";
+      });
+    });
+    Q_CHECK = function(){
+      var ok = selv===item.answer;
+      container.querySelectorAll(".tf-btn").forEach(function(b){
+        var v = b.dataset.v==="1";
+        if(v===item.answer) b.classList.add("correct");
+        else if(v===selv) b.classList.add("wrong");
+      });
+      return {correct:ok, explain:"C'était "+(item.answer?"Vrai":"Faux")+"."};
+    };
+  }
+  else if(item.type==="decomposition"){
+    var all2 = item.correct.concat(item.distractors);
+    shuffleArr(all2);
+    var html3 = '<div class="q-sub">Cible : '+item.target+'</div><div class="chip-wrap">';
+    all2.forEach(function(c,i){ html3 += '<span class="chip" data-c="'+encodeURIComponent(c)+'">'+c+'</span>'; });
+    html3 += '</div>';
+    container.innerHTML = html3;
+    var picked2 = [];
+    container.querySelectorAll(".chip").forEach(function(c){
+      c.addEventListener("click", function(){
+        var v = decodeURIComponent(c.dataset.c);
+        var p = picked2.indexOf(v);
+        if(p>=0){ picked2.splice(p,1); c.classList.remove("selected"); }
+        else { picked2.push(v); c.classList.add("selected"); }
+      });
+    });
+    Q_CHECK = function(){
+      var a = picked2.slice().sort();
+      var b = item.correct.slice().sort();
+      var ok = a.length===b.length && a.every(function(v,i){return v===b[i];});
+      container.querySelectorAll(".chip").forEach(function(c){
+        var v = decodeURIComponent(c.dataset.c);
+        if(item.correct.indexOf(v)>=0) c.classList.add("correctchip");
+        else if(picked2.indexOf(v)>=0) c.classList.add("wrongchip");
+      });
+      return {correct:ok, explain:"Il fallait : "+item.correct.join(" + ")+"."};
+    };
+  }
+  else if(item.type==="order"){
+    var pool = item.items.slice(); shuffleArr(pool);
+    var target = item.items.slice().sort(function(a,b){ return item.direction==="desc" ? b-a : a-b; });
+    var html4 = '<div class="order-list" id="order-slots">';
+    for(var i=0;i<target.length;i++) html4 += '<div class="order-slot" data-slot="'+i+'"><span class="num">'+(i+1)+'</span><span class="val"></span></div>';
+    html4 += '</div><div class="order-pool" id="order-pool">';
+    pool.forEach(function(n){ html4 += '<span class="chip" data-n="'+n+'">'+fmtNum(n)+'</span>'; });
+    html4 += '</div>';
+    container.innerHTML = html4;
+    var placed = [];
+    function refreshPool(){
+      container.querySelectorAll("#order-pool .chip").forEach(function(c){
+        c.classList.toggle("picked", placed.indexOf(parseInt(c.dataset.n,10))>=0);
+      });
+    }
+    container.querySelectorAll("#order-pool .chip").forEach(function(c){
+      c.addEventListener("click", function(){
+        var n = parseInt(c.dataset.n,10);
+        if(placed.indexOf(n)>=0) return;
+        if(placed.length>=target.length) return;
+        placed.push(n);
+        var slot = container.querySelector('.order-slot[data-slot="'+(placed.length-1)+'"] .val');
+        slot.textContent = fmtNum(n);
+        refreshPool();
+      });
+    });
+    container.querySelectorAll(".order-slot").forEach(function(sEl){
+      sEl.addEventListener("click", function(){
+        var i = parseInt(sEl.dataset.slot,10);
+        if(i < placed.length){ placed.splice(i,1); rebuildSlots(); refreshPool(); }
+      });
+    });
+    function rebuildSlots(){
+      container.querySelectorAll(".order-slot").forEach(function(sEl,i){
+        sEl.querySelector(".val").textContent = i<placed.length ? fmtNum(placed[i]) : "";
+      });
+    }
+    Q_CHECK = function(){
+      var ok = placed.length===target.length && placed.every(function(v,i){return v===target[i];});
+      return {correct:ok, explain:"L'ordre attendu était : "+target.map(fmtNum).join(" → ")+"."};
+    };
+  }
+  else if(item.type==="number_line"){
+    var w=560,h=110, pad=30;
+    var x = function(v){ return pad + (v-item.min)/(item.max-item.min)*(w-2*pad); };
+    var svg = '<svg class="line-svg" viewBox="0 0 '+w+' '+h+'">';
+    svg += '<line x1="'+pad+'" y1="60" x2="'+(w-pad)+'" y2="60" stroke="#2f2a44" stroke-width="3"/>';
+    for(var v=item.min; v<=item.max+0.0001; v+=item.step){
+      svg += '<line x1="'+x(v)+'" y1="52" x2="'+x(v)+'" y2="68" stroke="#2f2a44" stroke-width="3"/>';
+      if(v===item.min || v>=item.max-0.0001){
+        svg += '<text x="'+x(v)+'" y="88" font-size="13" font-weight="700" text-anchor="middle" fill="#6b6580">'+fmtNum(v)+'</text>';
+      }
+    }
+    svg += '<polygon points="'+x(item.value)+',18 '+(x(item.value)-8)+',36 '+(x(item.value)+8)+',36" fill="'+currentDomainColor()+'"/>';
+    svg += '</svg>';
+    container.innerHTML = svg + '<div class="num-input-row"><input type="number" class="num-input" id="numin" placeholder="?"></div>';
+    var inpl = document.getElementById("numin");
+    setTimeout(function(){inpl.focus();},50);
+    inpl.addEventListener("keydown",function(e){ if(e.key==="Enter") submitAnswer(); });
+    Q_CHECK = function(){
+      var v2 = parseFloat(inpl.value);
+      var ok = v2===item.value;
+      return {correct:ok, explain:"La flèche indiquait "+fmtNum(item.value)+"."};
+    };
+  }
+}
+function fmtNum(n){
+  if(n%1!==0) return String(n).replace(".",",");
+  return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g," ");
+}
+function shuffleArr(a){ for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+function formatMinutes(min){
+  if(min<60) return min+" min";
+  var h = Math.floor(min/60), m = min%60;
+  return h+"h"+(m?String(m).padStart(2,"0"):"");
+}
+
+function submitAnswer(timeout){
+  clearInterval(Q_TIMER);
+  var res = timeout ? {correct:false, explain:"Temps écoulé !"} : Q_CHECK();
+  var item = SESSION.items[SESSION.idx];
+  if(res.correct) SESSION.correctCount++;
+  else SESSION.errors.push(item.id);
+  showFeedback(res);
+}
+
+function showFeedback(res){
+  var bar = document.getElementById("feedback");
+  bar.innerHTML = '<div class="feedback-inner '+(res.correct?"ok":"bad")+'">'+
+    '<div class="feedback-head '+(res.correct?"ok":"bad")+'">'+(res.correct?icon("check_circle",22,"#3fae62")+" Bravo !":icon("cross_circle",22,"#e4304f")+" Pas tout à fait")+'</div>'+
+    (res.explain? '<div class="feedback-explain">'+res.explain+'</div>' : '')+
+    '<button class="btn btn-continue btn-block" id="fb-continue">Continuer →</button></div>';
+  bar.classList.add("show");
+  document.getElementById("fb-continue").addEventListener("click", nextQuestion);
+}
+function nextQuestion(){
+  document.getElementById("feedback").classList.remove("show");
+  SESSION.idx++;
+  if(SESSION.idx >= SESSION.items.length){ finishSession(); }
+  else { renderQuestion(); }
+}
+function resetProgress(){
+  STATE.progress = {};
+  STATE.periodsRewarded = {};
+  STATE.streak = {count:0, lastDay:null};
+  STATE.time = {daily:{}, weekKey:isoWeekKey(), weekTotal:0};
+  STATE.stars = {balance:0, totalEarned:0};
+  saveState();
+}
+function awardStars(n){
+  STATE.stars.balance += n; STATE.stars.totalEarned += n;
+}
+function finishSession(){
+  var pct = Math.round(SESSION.correctCount/SESSION.items.length*100);
+  var elapsed = Date.now()-SESSION.startedAt;
+  addPlayTime(elapsed);
+  recordDayPlayed();
+  var ch = CONTENT.chapters[SESSION.chapterId];
+  var prog = chapterProgress(SESSION.chapterId);
+  if(!prog[SESSION.blockKey]) prog[SESSION.blockKey] = {best:0};
+  var prevBest = prog[SESSION.blockKey].best || 0;
+  var wasMastered = chapterMastered(ch);
+  if(!SESSION.reviewMode && pct>prevBest){
+    prog[SESSION.blockKey].best = pct;
+  }
+  prog[SESSION.blockKey].lastErrors = SESSION.errors;
+  var nowMastered = chapterMastered(ch);
+  if(!wasMastered && nowMastered && !prog.chapterRewarded){
+    prog.chapterRewarded = true;
+    awardStars(1);
+    var period = CONTENT.periods.find(function(p){ return p.id===ch.period; });
+    var periodComplete = period.chapters.every(function(cid){ return chapterMastered(CONTENT.chapters[cid]); });
+    if(periodComplete && !STATE.periodsRewarded[period.id]){
+      STATE.periodsRewarded[period.id] = true;
+      awardStars(period.chapters.length);
+    }
+  }
+  saveState();
+  go("result",{pct:pct, stars:scoreToStars(pct), errCount:SESSION.errors.length, total:SESSION.items.length});
+}
+
+RENDER.result = function(params){
+  var el = document.getElementById("screen-result");
+  var resultIcon = params.pct>=80 ? icon("trophy",56,"#f2b632") : params.pct>=70 ? icon("thumb",52,"#2f7fd6") : icon("seedling",52,"#3fae62");
+  var html = '<div class="result-hero"><div style="display:flex; justify-content:center;">'+resultIcon+'</div>';
+  html += '<div class="result-stars">'+starString(params.stars)+'</div>';
+  html += '<div class="result-pct">'+params.pct+'%</div>';
+  html += '<div class="result-label">'+(params.total-params.errCount)+' / '+params.total+' bonnes réponses</div></div>';
+  if(params.errCount>0){
+    html += '<button class="btn btn-gold btn-block" id="btn-review" style="margin-bottom:12px;">'+icon("replay",18,"#5a3d00")+' Rejouer les erreurs ('+params.errCount+')</button>';
+  }
+  html += '<button class="btn btn-outline btn-block" id="btn-back-chapter">Retour au chapitre</button>';
+  el.innerHTML = html;
+  if(params.errCount>0){
+    document.getElementById("btn-review").addEventListener("click", function(){
+      startSession(SESSION.chapterId, SESSION.blockKey, true);
+    });
+  }
+  document.getElementById("btn-back-chapter").addEventListener("click", function(){
+    go("chapter",{chapterId:SESSION.chapterId});
+  });
+};
+
+/* ================= REWARDS ================= */
+RENDER.rewards = function(){
+  var el = document.getElementById("screen-rewards");
+  var html = '<h2 class="title-font" style="font-size:22px; margin-bottom:14px;">Récompenses</h2>';
+  html += '<div class="balance-card"><div class="balance-num" style="display:flex; align-items:center; justify-content:center; gap:8px;">'+icon("star",34,"#5a3d00")+' '+STATE.stars.balance+'</div><div class="balance-lbl">Solde d\'étoiles</div></div>';
+
+  var pending = STATE.rewards.requests.filter(function(r){return r.status==="pending";});
+  if(pending.length){
+    html += '<div class="section-label">En attente de validation</div>';
+    pending.forEach(function(r){
+      html += '<div class="reward-row"><div class="reward-name">'+r.name+'<div class="reward-req">demandé le '+r.date+'</div></div>';
+      html += '<button class="small-btn" data-fulfill="'+r.id+'">Remis '+icon("check_small",14,"#fff")+'</button></div>';
+    });
+  }
+
+  html += '<div class="section-label">Catalogue</div>';
+  STATE.rewards.catalog.forEach(function(r){
+    var can = STATE.stars.balance >= r.cost;
+    html += '<div class="reward-row"><div class="reward-name">'+r.name+'<div class="reward-req">'+icon("star",12,"#e0a92f")+' '+r.cost+'</div></div>';
+    html += '<button class="small-btn" data-ask="'+r.id+'" '+(can?"":"disabled")+'>Demander</button></div>';
+  });
+  html += '<button class="btn btn-outline btn-block" id="btn-manage" style="margin-top:16px;">'+icon("gear",18,"#2f2a44")+' Gérer le catalogue (parent)</button>';
+  el.innerHTML = html;
+
+  el.querySelectorAll("[data-ask]").forEach(function(b){
+    b.addEventListener("click", function(){
+      var r = STATE.rewards.catalog.find(function(x){return x.id===b.dataset.ask;});
+      if(!r || STATE.stars.balance<r.cost) return;
+      STATE.stars.balance -= r.cost;
+      STATE.rewards.requests.push({id:"req"+Date.now(), name:r.name, cost:r.cost, date:todayKey(), status:"pending"});
+      saveState(); RENDER.rewards();
+    });
+  });
+  el.querySelectorAll("[data-fulfill]").forEach(function(b){
+    b.addEventListener("click", function(){
+      var r = STATE.rewards.requests.find(function(x){return x.id===b.dataset.fulfill;});
+      if(r) r.status="done";
+      saveState(); RENDER.rewards();
+    });
+  });
+  document.getElementById("btn-manage").addEventListener("click", openParentGate);
+};
+
+var PARENT_CODE = "1812";
+function openParentGate(){
+  var root = document.getElementById("modal-root");
+  var html = '<div class="modal-bg" id="modal-bg"><div class="modal-box" style="text-align:center;">';
+  html += '<div style="display:flex; justify-content:center; margin:6px 0 18px;">';
+  html += '<div style="width:64px; height:64px; border-radius:18px; background:var(--nombres-bg); display:flex; align-items:center; justify-content:center;">'+icon("lock_closed",30,"var(--nombres)")+'</div>';
+  html += '</div>';
+  html += '<h3 style="margin-bottom:8px; font-size:21px;">Accès parent</h3>';
+  html += '<p style="font-size:13px; color:var(--ink-soft); font-weight:600; margin-bottom:22px;">Entre le code à 4 chiffres pour gérer le catalogue.</p>';
+  html += '<div class="pin-row" id="pin-row">';
+  for(var i=0;i<4;i++){ html += '<input class="pin-box" data-pin="'+i+'" type="tel" inputmode="numeric" maxlength="1" autocomplete="off">'; }
+  html += '</div>';
+  html += '<p id="gate-error" style="color:var(--bad); font-size:12.5px; font-weight:700; visibility:hidden; margin:14px 0 4px;">Code incorrect, réessaie.</p>';
+  html += '<button class="btn btn-primary btn-block" id="gate-submit" style="margin:14px 0 10px;">Valider</button>';
+  html += '<button class="btn btn-outline btn-block" id="close-modal">Annuler</button></div></div>';
+  root.innerHTML = html;
+  var boxes = Array.from(root.querySelectorAll(".pin-box"));
+  setTimeout(function(){ boxes[0].focus(); },50);
+  function currentCode(){ return boxes.map(function(b){return b.value||"";}).join(""); }
+  function submit(){
+    if(currentCode()===PARENT_CODE){ openManageRewards(); }
+    else {
+      document.getElementById("gate-error").style.visibility = "visible";
+      boxes.forEach(function(b){ b.value=""; b.classList.add("pin-box-error"); });
+      boxes[0].focus();
+      setTimeout(function(){ boxes.forEach(function(b){ b.classList.remove("pin-box-error"); }); },400);
+    }
+  }
+  boxes.forEach(function(b,i){
+    b.addEventListener("input", function(){
+      b.value = b.value.replace(/[^0-9]/g,"").slice(0,1);
+      document.getElementById("gate-error").style.visibility = "hidden";
+      if(b.value && i<3) boxes[i+1].focus();
+      if(currentCode().length===4) submit();
+    });
+    b.addEventListener("keydown", function(e){
+      if(e.key==="Backspace" && !b.value && i>0){ boxes[i-1].focus(); }
+      if(e.key==="Enter") submit();
+    });
+  });
+  document.getElementById("gate-submit").addEventListener("click", submit);
+  document.getElementById("close-modal").addEventListener("click", function(){ root.innerHTML=""; });
+}
+
+function openManageRewards(){
+  var root = document.getElementById("modal-root");
+  var html = '<div class="modal-bg" id="modal-bg"><div class="modal-box">';
+  html += '<h3 style="margin-bottom:14px;">Gérer le catalogue</h3>';
+  html += '<div id="reward-list">';
+  STATE.rewards.catalog.forEach(function(r){
+    html += '<div class="reward-row" data-id="'+r.id+'">';
+    html += '<span class="drag-handle" data-handle="'+r.id+'">'+icon("grip",20,"#b7ab8f")+'</span>';
+    html += '<div class="reward-name">'+r.name+'<div class="reward-req">'+icon("star",12,"#e0a92f")+' '+r.cost+'</div></div>';
+    html += '<button class="small-btn" data-del="'+r.id+'" style="background:var(--bad)">'+icon("trash",14,"#fff")+' Suppr.</button></div>';
+  });
+  html += '</div>';
+  html += '<div class="field"><label>Nom de la récompense</label><input id="new-rname" placeholder="Ex : un magazine"></div>';
+  html += '<div class="field"><label>Coût en étoiles</label><input id="new-rcost" type="number" placeholder="Ex : 5"></div>';
+  html += '<button class="btn btn-primary btn-block" id="add-reward" style="margin-bottom:24px;">Ajouter</button>';
+  html += '<div class="section-label" style="margin-top:0;">Zone parent</div>';
+  html += '<button class="btn btn-outline btn-block" id="reset-progress" style="margin-bottom:10px; border-color:var(--bad); color:var(--bad);">'+icon("replay",16,"var(--bad)")+' Réinitialiser le score et le temps</button>';
+  html += '<button class="btn btn-outline btn-block" id="close-modal">Fermer</button></div></div>';
+  root.innerHTML = html;
+  root.querySelectorAll("[data-del]").forEach(function(b){
+    b.addEventListener("click", function(){
+      STATE.rewards.catalog = STATE.rewards.catalog.filter(function(r){return r.id!==b.dataset.del;});
+      saveState(); openManageRewards();
+    });
+  });
+  document.getElementById("add-reward").addEventListener("click", function(){
+    var name = document.getElementById("new-rname").value.trim();
+    var cost = parseInt(document.getElementById("new-rcost").value,10);
+    if(!name || !cost || cost<=0) return;
+    STATE.rewards.catalog.push({id:"r"+Date.now(), name:name, cost:cost});
+    saveState(); openManageRewards();
+  });
+  var resetBtn = document.getElementById("reset-progress");
+  var resetArmed = false;
+  var resetTimer = null;
+  resetBtn.addEventListener("click", function(){
+    if(!resetArmed){
+      resetArmed = true;
+      resetBtn.innerHTML = "Confirmer la réinitialisation ?";
+      resetBtn.style.background = "var(--bad)";
+      resetBtn.style.color = "#fff";
+      resetTimer = setTimeout(function(){
+        resetArmed = false;
+        resetBtn.innerHTML = icon("replay",16,"var(--bad)")+" Réinitialiser le score et le temps";
+        resetBtn.style.background = "";
+        resetBtn.style.color = "var(--bad)";
+      }, 4000);
+    } else {
+      clearTimeout(resetTimer);
+      resetProgress();
+      root.innerHTML = "";
+      go("home",{});
+    }
+  });
+  document.getElementById("close-modal").addEventListener("click", function(){
+    root.innerHTML = ""; RENDER.rewards();
+  });
+  initRewardDrag();
+}
+
+function initRewardDrag(){
+  var list = document.getElementById("reward-list");
+  if(!list) return;
+  list.querySelectorAll(".drag-handle").forEach(function(handle){
+    handle.addEventListener("pointerdown", function(e){
+      e.preventDefault();
+      var row = handle.closest(".reward-row");
+      var rows = Array.from(list.children);
+      var startIndex = rows.indexOf(row);
+      var rowH = row.offsetHeight + 10;
+      var startY = e.clientY;
+      var order = STATE.rewards.catalog.map(function(r){return r.id;});
+      var dragId = row.dataset.id;
+      var currentIndex = startIndex;
+      row.classList.add("dragging");
+      row.setPointerCapture(e.pointerId);
+
+      function onMove(ev){
+        var dy = ev.clientY - startY;
+        row.style.transform = "translateY("+dy+"px)";
+        var newIndex = Math.max(0, Math.min(order.length-1, Math.round(startIndex + dy/rowH)));
+        if(newIndex !== currentIndex){
+          var moved = order.splice(currentIndex,1)[0];
+          order.splice(newIndex,0,moved);
+          currentIndex = newIndex;
+          rows.forEach(function(r2){
+            if(r2===row) return;
+            var idInOrder = order.indexOf(r2.dataset.id);
+            var origIndex = rows.indexOf(r2);
+            var offset = (idInOrder - origIndex) * rowH;
+            r2.style.transition = "transform .18s ease";
+            r2.style.transform = offset ? "translateY("+offset+"px)" : "";
+          });
+        }
+      }
+      function onUp(ev){
+        row.releasePointerCapture(ev.pointerId);
+        row.removeEventListener("pointermove", onMove);
+        row.removeEventListener("pointerup", onUp);
+        row.removeEventListener("pointercancel", onUp);
+        row.classList.remove("dragging");
+        STATE.rewards.catalog = order.map(function(id){ return STATE.rewards.catalog.find(function(r){return r.id===id;}); });
+        saveState();
+        openManageRewards();
+      }
+      row.addEventListener("pointermove", onMove);
+      row.addEventListener("pointerup", onUp);
+      row.addEventListener("pointercancel", onUp);
+    });
+  });
+}
+
+/* ================= PROGRESSION ================= */
+RENDER.progression = function(){
+  var el = document.getElementById("screen-progression");
+  var chapters = Object.values(CONTENT.chapters);
+  var masteredCount = chapters.filter(chapterMastered).length;
+  var domainStats = {};
+  Object.keys(DOMAIN_META).forEach(function(d){ domainStats[d]={total:0,sum:0}; });
+  chapters.forEach(function(ch){
+    if(!ch.blocks) return;
+    var keys = chapterBlockKeys(ch);
+    keys.forEach(function(k){
+      var b = blockBest(ch.id,k);
+      if(b>0){ domainStats[ch.domain].total++; domainStats[ch.domain].sum+=b; }
+    });
+  });
+  var totalMin = Math.floor(Object.values(STATE.time.daily).reduce(function(a,b){return a+b;},0)/60000);
+  var weekMin2 = Math.floor(STATE.time.weekTotal/60000);
+  var html = '<h2 class="title-font" style="font-size:22px; margin-bottom:14px;">Progression</h2>';
+  html += '<div class="stat-grid">';
+  html += '<div class="stat-box"><b>'+masteredCount+' / '+chapters.length+'</b><span>Chapitres maîtrisés</span></div>';
+  html += '<div class="stat-box"><b style="display:flex; align-items:center; justify-content:center; gap:6px;">'+icon("calendar",22,"#2f7fd6","#ffffff")+' '+STATE.streak.count+'</b><span>Jours de suite</span></div>';
+  html += '<div class="stat-box"><b>'+formatMinutes(weekMin2)+'</b><span>Temps cette semaine</span></div>';
+  html += '<div class="stat-box"><b>'+formatMinutes(totalMin)+'</b><span>Temps d\'entraînement total</span></div>';
+  html += '</div>';
+  html += '<div class="section-label">Taux de réussite par domaine</div><div class="card">';
+  Object.keys(DOMAIN_META).forEach(function(d){
+    var s = domainStats[d];
+    var pct = s.total ? Math.round(s.sum/s.total) : 0;
+    html += '<div class="domain-bar-row"><div class="lbl">'+DOMAIN_META[d].label+'</div><div class="domain-bar-track"><div class="domain-bar-fill" style="width:'+pct+'%; background:'+DOMAIN_META[d].color+'"></div></div><b style="font-size:12.5px;">'+pct+'%</b></div>';
+  });
+  html += '</div>';
+  html += '<div class="section-label">Les 35 chapitres</div><div class="card" style="display:flex; flex-wrap:wrap; gap:8px; justify-content:center;">';
+  chapters.forEach(function(ch){
+    var dm = DOMAIN_META[ch.domain];
+    var mastered = chapterMastered(ch);
+    var unlocked = chapterUnlocked(ch);
+    html += '<div style="width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;background:'+dm.color+'; opacity:'+(mastered?1:(unlocked?0.55:0.22))+'">'+(mastered?icon("star",16,"#fff"):ch.id)+'</div>';
+  });
+  html += '</div>';
+  el.innerHTML = html;
+};
+
+/* ================= INIT ================= */
+document.getElementById("splash-badge-icon").innerHTML = icon("ruler",64,"#3a7ec2","#f2b632");
+document.querySelectorAll("[data-icon]").forEach(function(el){
+  el.innerHTML = icon(el.dataset.icon, el.dataset.iconSize||20, "currentColor");
+});
+setTimeout(function(){
+  document.getElementById("screen-splash").classList.remove("active");
+  go("home");
+}, 1100);
+
+
+
+
+</script>
+</body>
+</html>
