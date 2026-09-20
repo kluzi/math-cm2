@@ -135,6 +135,7 @@ button{font-family:inherit; border:none; cursor:pointer; background:none; color:
   position:fixed; bottom:0; left:0; right:0; display:flex; justify-content:center; z-index:20;
   transform:translateZ(0); -webkit-transform:translateZ(0); will-change:transform;
 }
+.bottom-nav.hidden{display:none;}
 .bottom-nav-inner{
   width:100%; max-width:560px; background:#fff; display:flex; box-shadow:0 -6px 20px rgba(47,42,68,.12);
   border-radius:22px 22px 0 0; overflow:hidden;
@@ -163,7 +164,7 @@ button{font-family:inherit; border:none; cursor:pointer; background:none; color:
 .session-top{display:flex; align-items:center; gap:10px; margin-bottom:16px;}
 .session-track{flex:1; height:10px; background:#efe9db; border-radius:999px; overflow:hidden;}
 .session-track i{display:block; height:100%; border-radius:999px; transition:width .3s ease;}
-.timer-chip{font-weight:800; font-size:13px; background:#fff; padding:6px 12px; border-radius:999px; box-shadow:var(--shadow); flex-shrink:0;}
+.timer-chip{font-weight:800; font-size:13px; background:#fff; padding:6px 0; border-radius:999px; box-shadow:var(--shadow); flex-shrink:0; width:50px; text-align:center; box-sizing:border-box;}
 .count-chip{font-weight:800; font-size:13px; color:var(--ink-soft); background:#fff; padding:6px 12px; border-radius:999px; box-shadow:var(--shadow); flex-shrink:0;}
 .btn-continue{background:var(--ok); color:#fff;}
 .timer-chip.low{color:var(--bad);}
@@ -368,9 +369,9 @@ function varyDansCombienDeFois(maxB,maxX){ return function(){ var b=ri(2,maxB), 
 function varyCombienDeFoisDans(maxB,maxX){ return function(){ var b=ri(2,maxB), x=ri(2,maxX); return {prompt:"Combien de fois "+b+" dans "+(b*x)+" ?", answer:x}; }; }
 function varyMultZeroFirst(maxB){ return function(){ var b=ri(2,maxB); return {prompt:"? × "+b+" = 0", answer:0}; }; }
 function chronoWrap(fn){ return function(){ var r=fn(); return {prompt:"⏱ Calcul chrono : "+r.prompt, answer:r.answer}; }; }
-function varyPoseAdd2(){ return function(){ var a=ri(100,999), b=ri(1000,9999); return {prompt:"Pose et effectue : "+a+" + "+b, answer:a+b}; }; }
-function varyPoseAdd3(){ return function(){ var a=ri(1000,4999), b=ri(10,99), c=ri(1000,4999); return {prompt:"Pose et effectue : "+a+" + "+b+" + "+c, answer:a+b+c}; }; }
-function varyPoseSub(baseMin,baseMax,gapMin,gapMax){ return function(){ var a=ri(baseMin,baseMax); var b=ri(gapMin,Math.min(gapMax,a-10)); return {prompt:"Pose et effectue : "+a+" − "+b, answer:a-b}; }; }
+function varyPoseAdd2(){ return function(){ var a=ri(100,999), b=ri(1000,9999); return {prompt:"Pose et effectue : "+fmtNum(a)+" + "+fmtNum(b), answer:a+b}; }; }
+function varyPoseAdd3(){ return function(){ var a=ri(1000,4999), b=ri(10,99), c=ri(1000,4999); return {prompt:"Pose et effectue : "+fmtNum(a)+" + "+fmtNum(b)+" + "+fmtNum(c), answer:a+b+c}; }; }
+function varyPoseSub(baseMin,baseMax,gapMin,gapMax){ return function(){ var a=ri(baseMin,baseMax); var b=ri(gapMin,Math.min(gapMax,a-10)); return {prompt:"Pose et effectue : "+fmtNum(a)+" − "+fmtNum(b), answer:a-b}; }; }
 function varyEncadre1000(baseMin,baseMax){ return function(){ var base=ri(baseMin,baseMax)*1000, off=ri(1,999); var mid=base+off; return {prompt:"Encadre "+fmtNum(mid)+" par deux milliers consécutifs.", mid:mid, answerA:base, answerB:base+1000}; }; }
 function varyRangeRound1000(baseMin,baseMax){ return function(){ var v=ri(baseMin,baseMax)*1000; return {prompt:"Complète avec un nombre qui convient : "+fmtNum(v-1)+" < ? < "+fmtNum(v+1), min:v-1, max:v+1}; }; }
 function varyNumberLine(min,max,step){ return function(){ var n=Math.round((max-min)/step); var idx=ri(1,n-1); return {value:min+idx*step}; }; }
@@ -403,33 +404,33 @@ var CH1_LECON = [
   {id:"L5", type:"numeric", prompt:"6 centaines = ? unités", answer:600,
     vary:function(){ var a=ri(2,9); return {prompt:a+" centaines = ? unités", answer:a*100}; }},
   {id:"L6", type:"mcq", prompt:"Écris en chiffres : 8 milliers 3 centaines 6 dizaines 5 unités.",
-    choices:["8365","8635","8356","8653"], answerIndex:0},
+    choices:["8 365","8 635","8 356","8 653"], answerIndex:0},
   {id:"L7", type:"numeric", prompt:"(7 × 1000) + (4 × 10) + 3 = ?", answer:7043,
     vary:function(){ var a=ri(2,9), b=ri(1,9), c=ri(1,9); return {prompt:"("+a+" × 1000) + ("+b+" × 10) + "+c+" = ?", answer:a*1000+b*10+c}; }},
-  {id:"L8", type:"numeric", prompt:"6000 + 200 + 90 + 8 = ?", answer:6298,
-    vary:function(){ var th=ri(2,9), h=ri(1,9), t=ri(1,9), u=ri(1,9); return {prompt:(th*1000)+" + "+(h*100)+" + "+(t*10)+" + "+u+" = ?", answer:th*1000+h*100+t*10+u}; }},
+  {id:"L8", type:"numeric", prompt:"6 000 + 200 + 90 + 8 = ?", answer:6298,
+    vary:function(){ var th=ri(2,9), h=ri(1,9), t=ri(1,9), u=ri(1,9); return {prompt:fmtNum(th*1000)+" + "+fmtNum(h*100)+" + "+fmtNum(t*10)+" + "+u+" = ?", answer:th*1000+h*100+t*10+u}; }},
   {id:"L9", type:"numeric", prompt:"2 centaines + 1 millier + 75 dizaines = ?", answer:1950,
     vary:function(){ var cent=ri(1,9), mil=ri(1,9), diz=ri(10,99); return {prompt:cent+" centaines + "+mil+" millier + "+diz+" dizaines = ?", answer:cent*100+mil*1000+diz*10}; }},
-  {id:"L10", type:"numeric", prompt:"4238 = 42 centaines et ? unités", answer:38,
-    vary:function(){ var h=ri(10,99), rem=ri(1,99); return {prompt:(h*100+rem)+" = "+h+" centaines et ? unités", answer:rem}; }},
-  {id:"L11", type:"numeric", prompt:"Dans 9018, combien y a-t-il de dizaines ?", answer:901,
-    vary:function(){ var n=ri(1000,9999); return {prompt:"Dans "+n+", combien y a-t-il de dizaines ?", answer:Math.floor(n/10)}; }},
-  {id:"L12", type:"mcq", prompt:"Dans 5083, le chiffre 8 est le chiffre des dizaines. Dans 8723, le chiffre 8 est le chiffre des…",
+  {id:"L10", type:"numeric", prompt:"4 238 = 42 centaines et ? unités", answer:38,
+    vary:function(){ var h=ri(10,99), rem=ri(1,99); return {prompt:fmtNum(h*100+rem)+" = "+h+" centaines et ? unités", answer:rem}; }},
+  {id:"L11", type:"numeric", prompt:"Dans 9 018, combien y a-t-il de dizaines ?", answer:901,
+    vary:function(){ var n=ri(1000,9999); return {prompt:"Dans "+fmtNum(n)+", combien y a-t-il de dizaines ?", answer:Math.floor(n/10)}; }},
+  {id:"L12", type:"mcq", prompt:"Dans 5 083, le chiffre 8 est le chiffre des dizaines. Dans 8 723, le chiffre 8 est le chiffre des…",
     choices:["unités","dizaines","centaines","milliers"], answerIndex:3},
   {id:"L13", type:"mcq", prompt:"Sans poser l'opération, trouve rapidement le résultat de 99 × 63.",
-    choices:["9701","627","6427","6237"], answerIndex:3},
-  {id:"L14", type:"numeric", prompt:"Un fabricant de bougies produit 7845 bougies, emballées par boîtes de 100. Combien de boîtes seront complètement remplies ?", answer:78,
-    vary:function(){ var boxes=ri(20,99), rem=ri(1,99); return {prompt:"Un fabricant de bougies produit "+(boxes*100+rem)+" bougies, emballées par boîtes de 100. Combien de boîtes seront complètement remplies ?", answer:boxes}; }},
-  {id:"L15", type:"numeric", prompt:"Un fleuriste a reçu une livraison de 3487 roses. Il veut faire des bouquets de 10 roses. Combien de bouquets pourra-t-il faire ?", answer:348,
-    vary:function(){ var b=ri(100,400), rem=ri(1,9); return {prompt:"Un fleuriste a reçu une livraison de "+(b*10+rem)+" roses. Il veut faire des bouquets de 10 roses. Combien de bouquets pourra-t-il faire ?", answer:b}; }},
+    choices:["9 701","627","6 427","6 237"], answerIndex:3},
+  {id:"L14", type:"numeric", prompt:"Un fabricant de bougies produit 7 845 bougies, emballées par boîtes de 100. Combien de boîtes seront complètement remplies ?", answer:78,
+    vary:function(){ var boxes=ri(20,99), rem=ri(1,99); return {prompt:"Un fabricant de bougies produit "+fmtNum(boxes*100+rem)+" bougies, emballées par boîtes de 100. Combien de boîtes seront complètement remplies ?", answer:boxes}; }},
+  {id:"L15", type:"numeric", prompt:"Un fleuriste a reçu une livraison de 3 487 roses. Il veut faire des bouquets de 10 roses. Combien de bouquets pourra-t-il faire ?", answer:348,
+    vary:function(){ var b=ri(100,400), rem=ri(1,9); return {prompt:"Un fleuriste a reçu une livraison de "+fmtNum(b*10+rem)+" roses. Il veut faire des bouquets de 10 roses. Combien de bouquets pourra-t-il faire ?", answer:b}; }},
   {id:"L16", type:"mcq", prompt:"Parmi ces nombres, lequel peut être encadré par 10 000 et 100 000 ?",
-    choices:["236795","1010000","9637","84328"], answerIndex:3},
+    choices:["236 795","1 010 000","9 637","84 328"], answerIndex:3},
   {id:"L17", type:"range", prompt:"Complète avec un nombre qui convient : 69 999 < ? < 70 001", min:69999, max:70001, vary:varyRangeRound1000(2,900)},
   {id:"L18", type:"compound2", prompt:"Encadre 20 490 par deux milliers consécutifs.", labelA:"<", labelB:"<", mid:20490, answerA:20000, answerB:21000, vary:varyEncadre1000(2,90)},
   {id:"L19", type:"order", prompt:"Range ces nombres par ordre décroissant (touche-les du plus grand au plus petit).",
     items:[903110,90627,903109,90801,905112,91000], direction:"desc"},
   {id:"L20", type:"mcq", prompt:"Zoé a oublié le code secret de son téléphone. C'est un nombre à 6 chiffres. Le chiffre des centaines de milliers est plus grand que le chiffre des centaines. Le chiffre des dizaines est plus petit que le chiffre des dizaines de milliers. Quel est ce code ?",
-    choices:["928758","84733","843726","503718"], answerIndex:2},
+    choices:["928 758","84 733","843 726","503 718"], answerIndex:2},
   {id:"L21", type:"numeric", prompt:"Écris en chiffres : deux-cent-mille-cent-cinquante-trois.", answer:200153},
   {id:"L22", type:"mcq", prompt:"78 540 + 100 … 78 630 + 10 — quel signe convient ?", choices:["<",">","="], answerIndex:2},
   {id:"L23", type:"compound2", prompt:"Encadre 700 008 par deux milliers consécutifs.", labelA:"<", labelB:"<", mid:700008, answerA:700000, answerB:701000, vary:varyEncadre1000(100,900)},
@@ -442,10 +443,10 @@ var CH1_JESAIS = {
     {q:"Le nombre cent-trois-mille-deux-cent-soixante-dix-neuf s'écrit…", choices:["100 3 000 179","103 1 279","103 279"], correct:[2]},
     {q:"Le nombre 300 040 se lit…", choices:["trois-cent-mille-quarante","trois-cent-quarante","trois-mille-quarante"], correct:[0]},
     {q:"1 centaine de milliers, c'est…", choices:["10 000 unités","100 milliers","10 dizaines de milliers"], correct:[1,2]},
-    {q:"71 milliers + 78 unités s'écrit…", choices:["7178","71078","71780"], correct:[1]},
-    {q:"Les nombres supérieurs à 67 891 sont…", choices:["230459","67799","68000"], correct:[0,2]},
-    {q:"Les nombres inférieurs à 104 687 sont…", choices:["97689","104700","101689"], correct:[0,2]},
-    {q:"Les nombres compris entre 10 000 et 100 000 sont…", choices:["101000","24561","90000"], correct:[1,2]},
+    {q:"71 milliers + 78 unités s'écrit…", choices:["7 178","71 078","71 780"], correct:[1]},
+    {q:"Les nombres supérieurs à 67 891 sont…", choices:["230 459","67 799","68 000"], correct:[0,2]},
+    {q:"Les nombres inférieurs à 104 687 sont…", choices:["97 689","104 700","101 689"], correct:[0,2]},
+    {q:"Les nombres compris entre 10 000 et 100 000 sont…", choices:["101 000","24 561","90 000"], correct:[1,2]},
     {q:"Le nombre 20 496 est compris entre…", choices:["10 000 et 100 000","20 000 et 30 000","20 490 et 20 500"], correct:[0,1,2]}
   ]
 };
@@ -524,10 +525,10 @@ var CH1_CALCUL = [
   Object.assign({id:"C57",type:"numeric",prompt:"⏱ Calcul chrono : 5 × ? = 35",answer:7,vary:chronoWrap(varyMultMissingLast(9,9))},seanceTag(4)),
   Object.assign({id:"C58",type:"numeric",prompt:"⏱ Calcul chrono : ? × 9 = 0",answer:0,vary:chronoWrap(varyMultZeroFirst(9))},seanceTag(4)),
   Object.assign({id:"C59",type:"numeric",prompt:"⏱ Calcul chrono : 6 × 8",answer:48,vary:chronoWrap(varyMult2(9,9))},seanceTag(4)),
-  Object.assign({id:"C60",type:"numeric",prompt:"Pose et effectue : 574 + 9725",answer:10299,vary:varyPoseAdd2()},seanceTag(5)),
+  Object.assign({id:"C60",type:"numeric",prompt:"Pose et effectue : 574 + 9 725",answer:10299,vary:varyPoseAdd2()},seanceTag(5)),
   Object.assign({id:"C61",type:"numeric",prompt:"Pose et effectue : 403 − 35",answer:368,vary:varyPoseSub(200,999,10,300)},seanceTag(5)),
-  Object.assign({id:"C62",type:"numeric",prompt:"Pose et effectue : 1647 + 14 + 4023",answer:5684,vary:varyPoseAdd3()},seanceTag(5)),
-  Object.assign({id:"C63",type:"numeric",prompt:"Pose et effectue : 3242 − 2254",answer:988,vary:varyPoseSub(1000,4999,500,3000)},seanceTag(5))
+  Object.assign({id:"C62",type:"numeric",prompt:"Pose et effectue : 1 647 + 14 + 4 023",answer:5684,vary:varyPoseAdd3()},seanceTag(5)),
+  Object.assign({id:"C63",type:"numeric",prompt:"Pose et effectue : 3 242 − 2 254",answer:988,vary:varyPoseSub(1000,4999,500,3000)},seanceTag(5))
 ];
 
 function fmtDec(n){ return (Math.round(n*10)/10).toString().replace(".",","); }
@@ -544,8 +545,8 @@ var CH1_PROBLEME = [
     vary:function(){ var total=ri(300,900), midi=ri(100,total-100); return {prompt:"Une pizzéria a servi "+total+" pizzas au cours de la journée. "+midi+" pizzas ont été servies à midi. Combien de pizzas ont été servies le soir ?", answer:total-midi}; }},
   {id:"P6", type:"numeric", prompt:"Une grenouille doit effectuer 14 sauts de 30 cm pour atteindre sa mare. Quelle distance la sépare de cette mare ?", answer:420, unit:"cm",
     vary:function(){ var n=ri(8,20), d=ri(15,40); return {prompt:"Une grenouille doit effectuer "+n+" sauts de "+d+" cm pour atteindre sa mare. Quelle distance la sépare de cette mare ?", answer:n*d}; }},
-  {id:"P7", type:"numeric", prompt:"Lilou part faire une randonnée à vélo. Au départ, son compteur indique 5218 km. À son retour, il indique 5276 km. Quelle distance Lilou a-t-elle parcourue ?", answer:58, unit:"km",
-    vary:function(){ var depart=ri(1000,9000), dist=ri(20,150); return {prompt:"Lilou part faire une randonnée à vélo. Au départ, son compteur indique "+depart+" km. À son retour, il indique "+(depart+dist)+" km. Quelle distance Lilou a-t-elle parcourue ?", answer:dist}; }},
+  {id:"P7", type:"numeric", prompt:"Lilou part faire une randonnée à vélo. Au départ, son compteur indique 5 218 km. À son retour, il indique 5 276 km. Quelle distance Lilou a-t-elle parcourue ?", answer:58, unit:"km",
+    vary:function(){ var depart=ri(1000,9000), dist=ri(20,150); return {prompt:"Lilou part faire une randonnée à vélo. Au départ, son compteur indique "+fmtNum(depart)+" km. À son retour, il indique "+fmtNum(depart+dist)+" km. Quelle distance Lilou a-t-elle parcourue ?", answer:dist}; }},
   {id:"P8", type:"numeric", prompt:"Les poules de Madame Mimosa ont pondu 173 œufs. Elle range les œufs dans des boîtes de 6. Combien de boîtes de 6 œufs pourra-t-elle remplir complètement ?", answer:28,
     vary:function(){ var boxes=ri(15,40), rem=ri(1,5); return {prompt:"Les poules de Madame Mimosa ont pondu "+(boxes*6+rem)+" œufs. Elle range les œufs dans des boîtes de 6. Combien de boîtes de 6 œufs pourra-t-elle remplir complètement ?", answer:boxes}; }},
   {id:"P9", type:"numeric", prompt:"Une grenouille fait des sauts d'au plus 22 cm. Elle veut atteindre un moustique situé à 341 cm d'elle. Combien de sauts, au minimum, devra-t-elle effectuer ?", answer:16,
@@ -789,6 +790,8 @@ function go(name, params){
   document.querySelectorAll(".nav-btn").forEach(function(b){
     b.classList.toggle("active", b.dataset.nav===name);
   });
+  var nav = document.getElementById("bottom-nav");
+  if(nav) nav.classList.toggle("hidden", name==="session");
   RENDER[name] && RENDER[name](params||{});
 }
 document.querySelectorAll(".nav-btn").forEach(function(b){
@@ -949,6 +952,9 @@ function startSession(chapterId, blockKey, reviewMode){
     items = all.filter(function(it){ return lastErr.indexOf(it.id)>=0; });
     if(items.length===0) items = all;
   }
+  if(blockKey==="lecon" && items.length>20){
+    items = shuffleArr(items.slice()).slice(0,20);
+  }
   items = items.map(function(it){ return it.vary ? Object.assign({}, it, it.vary()) : it; });
   SESSION = {
     chapterId:chapterId, blockKey:blockKey, chrono:!!block.chrono, timeLimit:block.timeLimit||15,
@@ -1007,8 +1013,9 @@ function renderExerciseBody(container, item){
   Q_CHECK = function(){ return {correct:false}; };
   if(item.type==="numeric"){
     var step = (item.answer % 1 !== 0) ? "0.1" : "1";
-    container.innerHTML = '<div class="num-input-row"><input type="number" step="'+step+'" inputmode="decimal" class="num-input" id="numin" placeholder="?"> '+(item.unit?'<span class="unit-label">'+item.unit+'</span>':'')+'</div>';
+    container.innerHTML = '<div class="num-input-row"><input type="number" step="'+step+'" inputmode="decimal" autocomplete="off" class="num-input" id="numin" placeholder="?"> '+(item.unit?'<span class="unit-label">'+item.unit+'</span>':'')+'</div>';
     var inp = document.getElementById("numin");
+    inp.value = "";
     setTimeout(function(){inp.focus();},50);
     inp.addEventListener("keydown",function(e){ if(e.key==="Enter") submitAnswer(); });
     Q_CHECK = function(){
@@ -1018,8 +1025,9 @@ function renderExerciseBody(container, item){
     };
   }
   else if(item.type==="range"){
-    container.innerHTML = '<div class="num-input-row"><input type="number" inputmode="numeric" class="num-input" id="numin" placeholder="?"></div>';
+    container.innerHTML = '<div class="num-input-row"><input type="number" inputmode="numeric" autocomplete="off" class="num-input" id="numin" placeholder="?"></div>';
     var inp2 = document.getElementById("numin");
+    inp2.value = "";
     setTimeout(function(){inp2.focus();},50);
     inp2.addEventListener("keydown",function(e){ if(e.key==="Enter") submitAnswer(); });
     Q_CHECK = function(){
@@ -1030,7 +1038,9 @@ function renderExerciseBody(container, item){
   }
   else if(item.type==="compound2"){
     container.innerHTML = '<div style="text-align:center; font-weight:800; font-size:20px; margin:14px 0 6px;">'+item.labelA+' '+fmtNum(item.mid)+' '+item.labelB+'</div>'+
-      '<div class="num-input-row"><input type="number" class="num-input" id="numinA" style="max-width:130px" placeholder="?"> <span style="font-weight:800;">et</span> <input type="number" class="num-input" id="numinB" style="max-width:130px" placeholder="?"></div>';
+      '<div class="num-input-row"><input type="number" autocomplete="off" class="num-input" id="numinA" style="max-width:130px" placeholder="?"> <span style="font-weight:800;">et</span> <input type="number" autocomplete="off" class="num-input" id="numinB" style="max-width:130px" placeholder="?"></div>';
+    document.getElementById("numinA").value = "";
+    document.getElementById("numinB").value = "";
     Q_CHECK = function(){
       var a = parseFloat(document.getElementById("numinA").value);
       var b = parseFloat(document.getElementById("numinB").value);
@@ -1188,8 +1198,9 @@ function renderExerciseBody(container, item){
     }
     svg += '<polygon points="'+x(item.value)+',18 '+(x(item.value)-8)+',36 '+(x(item.value)+8)+',36" fill="'+currentDomainColor()+'"/>';
     svg += '</svg>';
-    container.innerHTML = svg + '<div class="num-input-row"><input type="number" class="num-input" id="numin" placeholder="?"></div>';
+    container.innerHTML = svg + '<div class="num-input-row"><input type="number" autocomplete="off" class="num-input" id="numin" placeholder="?"></div>';
     var inpl = document.getElementById("numin");
+    inpl.value = "";
     setTimeout(function(){inpl.focus();},50);
     inpl.addEventListener("keydown",function(e){ if(e.key==="Enter") submitAnswer(); });
     Q_CHECK = function(){
