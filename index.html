@@ -255,6 +255,7 @@ button{font-family:inherit; border:none; cursor:pointer; background:none; color:
 .reward-name{flex:1; font-weight:800; font-size:14.5px;}
 .reward-cost{font-weight:800; color:var(--gold-dark); font-size:14px;}
 .reward-req{font-size:10.5px; color:var(--ink-soft); font-weight:700; display:flex; align-items:center; gap:3px; margin-top:2px;}
+.cancel-link{display:flex; align-items:center; gap:4px; font-size:11px; font-weight:700; color:var(--ink-soft); text-decoration:underline; margin-top:6px; padding:2px 0;}
 .small-btn{display:inline-flex; align-items:center; gap:5px;}
 .small-btn{padding:9px 14px; border-radius:999px; font-weight:800; font-size:12.5px; background:var(--ink); color:#fff;}
 .small-btn[disabled]{background:#ddd7c7; color:#a29c8a;}
@@ -627,7 +628,7 @@ function defaultState(){
     progress:{}, // chapterId -> { lecon:{best:0}, flash:{...}, calcul:{...}, probleme:{...} }
     streak:{count:0, lastDay:null},
     time:{daily:{}, weekKey:isoWeekKey(), weekTotal:0},
-    stars:{balance:0, totalEarned:0},
+    stars:{balance:20, totalEarned:20},
     rewards:{catalog:[
       {id:"r1", name:"Choisir le film du vendredi soir", cost:5},
       {id:"r2", name:"Un magazine", cost:7},
@@ -1301,6 +1302,10 @@ RENDER.result = function(params){
 };
 
 /* ================= REWARDS ================= */
+function requestedThisWeek(rewardId){
+  var wk = isoWeekKey();
+  return STATE.rewards.requests.some(function(r){ return r.rewardId===rewardId && r.week===wk; });
+}
 RENDER.rewards = function(){
   var el = document.getElementById("screen-rewards");
   var html = '<h2 class="title-font" style="font-size:22px; margin-bottom:14px;">Récompenses</h2>';
@@ -1310,13 +1315,15 @@ RENDER.rewards = function(){
   if(pending.length){
     html += '<div class="section-label">En attente de validation</div>';
     pending.forEach(function(r){
-      html += '<div class="reward-row"><div class="reward-name">'+r.name+'<div class="reward-req">demandé le '+r.date+'</div></div>';
-      html += '<button class="small-btn" data-fulfill="'+r.id+'">Remis '+icon("check_small",14,"#fff")+'</button></div>';
+      html += '<div class="reward-row"><div class="reward-name">'+r.name;
+      html += '<button class="cancel-link" data-cancel="'+r.id+'">'+icon("close",11,"var(--ink-soft)")+' Annuler ma demande</button></div>';
+      html += '<button class="small-btn" data-validate="'+r.id+'" style="background:var(--ok)">'+icon("check_small",14,"#fff")+'</button>';
+      html += '<button class="small-btn" data-refuse="'+r.id+'" style="background:var(--bad)">'+icon("close",14,"#fff")+'</button></div>';
     });
   }
 
   html += '<div class="section-label">Catalogue</div>';
-  STATE.rewards.catalog.forEach(function(r){
+  STATE.rewards.catalog.filter(function(r){ return !requestedThisWeek(r.id); }).forEach(function(r){
     var can = STATE.stars.balance >= r.cost;
     html += '<div class="reward-row"><div class="reward-name">'+r.name+'<div class="reward-req">'+icon("star",12,"#e0a92f")+' '+r.cost+'</div></div>';
     html += '<button class="small-btn" data-ask="'+r.id+'" '+(can?"":"disabled")+'>Demander</button></div>';
@@ -1327,24 +1334,48 @@ RENDER.rewards = function(){
   el.querySelectorAll("[data-ask]").forEach(function(b){
     b.addEventListener("click", function(){
       var r = STATE.rewards.catalog.find(function(x){return x.id===b.dataset.ask;});
-      if(!r || STATE.stars.balance<r.cost) return;
+      if(!r || STATE.stars.balance<r.cost || requestedThisWeek(r.id)) return;
       STATE.stars.balance -= r.cost;
-      STATE.rewards.requests.push({id:"req"+Date.now(), name:r.name, cost:r.cost, date:todayKey(), status:"pending"});
+      STATE.rewards.requests.push({id:"req"+Date.now(), rewardId:r.id, name:r.name, cost:r.cost, date:todayKey(), week:isoWeekKey(), status:"pending"});
       saveState(); RENDER.rewards();
     });
   });
-  el.querySelectorAll("[data-fulfill]").forEach(function(b){
+  el.querySelectorAll("[data-cancel]").forEach(function(b){
     b.addEventListener("click", function(){
-      var r = STATE.rewards.requests.find(function(x){return x.id===b.dataset.fulfill;});
-      if(r) r.status="done";
-      saveState(); RENDER.rewards();
+      var r = STATE.rewards.requests.find(function(x){return x.id===b.dataset.cancel;});
+      if(r){
+        STATE.stars.balance += r.cost;
+        STATE.rewards.requests = STATE.rewards.requests.filter(function(x){return x.id!==r.id;});
+        saveState(); RENDER.rewards();
+      }
     });
   });
-  document.getElementById("btn-manage").addEventListener("click", openParentGate);
+  el.querySelectorAll("[data-validate]").forEach(function(b){
+    b.addEventListener("click", function(){
+      openParentGate(function(){
+        var r = STATE.rewards.requests.find(function(x){return x.id===b.dataset.validate;});
+        if(r) r.status="done";
+        saveState(); RENDER.rewards();
+      });
+    });
+  });
+  el.querySelectorAll("[data-refuse]").forEach(function(b){
+    b.addEventListener("click", function(){
+      openParentGate(function(){
+        var r = STATE.rewards.requests.find(function(x){return x.id===b.dataset.refuse;});
+        if(r){
+          STATE.stars.balance += r.cost;
+          STATE.rewards.requests = STATE.rewards.requests.filter(function(x){return x.id!==r.id;});
+        }
+        saveState(); RENDER.rewards();
+      });
+    });
+  });
+  document.getElementById("btn-manage").addEventListener("click", function(){ openParentGate(openManageRewards); });
 };
 
 var PARENT_CODE = "1812";
-function openParentGate(){
+function openParentGate(onSuccess){
   var root = document.getElementById("modal-root");
   var html = '<div class="modal-bg" id="modal-bg"><div class="modal-box" style="text-align:center;">';
   html += '<div style="display:flex; justify-content:center; margin:6px 0 18px;">';
@@ -1363,7 +1394,7 @@ function openParentGate(){
   setTimeout(function(){ boxes[0].focus(); },50);
   function currentCode(){ return boxes.map(function(b){return b.value||"";}).join(""); }
   function submit(){
-    if(currentCode()===PARENT_CODE){ openManageRewards(); }
+    if(currentCode()===PARENT_CODE){ root.innerHTML=""; onSuccess(); }
     else {
       document.getElementById("gate-error").style.visibility = "visible";
       boxes.forEach(function(b){ b.value=""; b.classList.add("pin-box-error"); });
