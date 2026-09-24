@@ -624,16 +624,17 @@ function isoWeekKey(d){
 
 function defaultState(){
   return {
-    progress:{}, // chapterId -> { lecon:{best:0}, flash:{...}, calcul:{...}, probleme:{...}, chapterRewarded:bool }
-    periodsRewarded:{},
+    progress:{}, // chapterId -> { lecon:{best:0}, flash:{...}, calcul:{...}, probleme:{...} }
     streak:{count:0, lastDay:null},
     time:{daily:{}, weekKey:isoWeekKey(), weekTotal:0},
     stars:{balance:0, totalEarned:0},
     rewards:{catalog:[
       {id:"r1", name:"Choisir le film du vendredi soir", cost:5},
       {id:"r2", name:"Un magazine", cost:7},
-      {id:"r3", name:"Un squishy", cost:15},
-      {id:"r4", name:"Un petit jouet", cost:20}
+      {id:"r3", name:"Un squishy", cost:20},
+      {id:"r4", name:"Un petit jouet", cost:25},
+      {id:"r6", name:"Un vêtement", cost:55},
+      {id:"r5", name:"Une sortie spéciale (cinéma, parc...)", cost:80}
     ], requests:[]},
     greetIndex:{}
   };
@@ -647,6 +648,9 @@ function loadState(){
     var s = JSON.parse(raw);
     var d = defaultState();
     for(var k in d){ if(!(k in s)) s[k]=d[k]; }
+    d.rewards.catalog.forEach(function(r){
+      if(!s.rewards.catalog.some(function(existing){ return existing.id===r.id; })) s.rewards.catalog.push(r);
+    });
     if(s.time.weekKey !== isoWeekKey()){ s.time.weekKey = isoWeekKey(); s.time.weekTotal = 0; }
     return s;
   }catch(e){ return defaultState(); }
@@ -683,9 +687,9 @@ function chapterUnlocked(ch){
   return chapterMastered(prev);
 }
 function scoreToStars(pct){
-  if(pct<=0) return 0;
-  if(pct<50) return 1;
-  if(pct<80) return 2;
+  if(pct<50) return 0;
+  if(pct<70) return 1;
+  if(pct<90) return 2;
   return 3;
 }
 
@@ -952,7 +956,7 @@ function startSession(chapterId, blockKey, reviewMode){
     items = all.filter(function(it){ return lastErr.indexOf(it.id)>=0; });
     if(items.length===0) items = all;
   }
-  if(blockKey==="lecon" && items.length>20){
+  if(items.length>20){
     items = shuffleArr(items.slice()).slice(0,20);
   }
   items = items.map(function(it){ return it.vary ? Object.assign({}, it, it.vary()) : it; });
@@ -1247,7 +1251,6 @@ function nextQuestion(){
 }
 function resetProgress(){
   STATE.progress = {};
-  STATE.periodsRewarded = {};
   STATE.streak = {count:0, lastDay:null};
   STATE.time = {daily:{}, weekKey:isoWeekKey(), weekTotal:0};
   STATE.stars = {balance:0, totalEarned:0};
@@ -1261,26 +1264,16 @@ function finishSession(){
   var elapsed = Date.now()-SESSION.startedAt;
   addPlayTime(elapsed);
   recordDayPlayed();
-  var ch = CONTENT.chapters[SESSION.chapterId];
   var prog = chapterProgress(SESSION.chapterId);
   if(!prog[SESSION.blockKey]) prog[SESSION.blockKey] = {best:0};
   var prevBest = prog[SESSION.blockKey].best || 0;
-  var wasMastered = chapterMastered(ch);
+  var prevStars = scoreToStars(prevBest);
   if(!SESSION.reviewMode && pct>prevBest){
     prog[SESSION.blockKey].best = pct;
   }
   prog[SESSION.blockKey].lastErrors = SESSION.errors;
-  var nowMastered = chapterMastered(ch);
-  if(!wasMastered && nowMastered && !prog.chapterRewarded){
-    prog.chapterRewarded = true;
-    awardStars(1);
-    var period = CONTENT.periods.find(function(p){ return p.id===ch.period; });
-    var periodComplete = period.chapters.every(function(cid){ return chapterMastered(CONTENT.chapters[cid]); });
-    if(periodComplete && !STATE.periodsRewarded[period.id]){
-      STATE.periodsRewarded[period.id] = true;
-      awardStars(period.chapters.length);
-    }
-  }
+  var newStars = scoreToStars(prog[SESSION.blockKey].best);
+  if(newStars>prevStars) awardStars(newStars-prevStars);
   saveState();
   go("result",{pct:pct, stars:scoreToStars(pct), errCount:SESSION.errors.length, total:SESSION.items.length});
 }
@@ -1518,7 +1511,7 @@ RENDER.progression = function(){
     var keys = chapterBlockKeys(ch);
     keys.forEach(function(k){
       var b = blockBest(ch.id,k);
-      if(b>0){ domainStats[ch.domain].total++; domainStats[ch.domain].sum+=b; }
+      domainStats[ch.domain].total++; domainStats[ch.domain].sum+=b;
     });
   });
   var totalMin = Math.floor(Object.values(STATE.time.daily).reduce(function(a,b){return a+b;},0)/60000);
