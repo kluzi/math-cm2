@@ -211,6 +211,8 @@ button{font-family:inherit; border:none; cursor:pointer; background:none; color:
 .slots-wrap{display:flex; flex-wrap:wrap; gap:8px; min-height:44px; padding:10px; background:#f2ede0; border-radius:14px; margin-bottom:14px;}
 
 .line-svg{width:100%; height:auto; margin:10px 0;}
+.figure-wrap{display:flex; justify-content:center; margin-bottom:14px;}
+.figure-svg{max-width:100%; height:auto;}
 .order-list{display:flex; flex-direction:column; gap:8px;}
 .order-slot{display:flex; align-items:center; gap:10px; background:#faf7ef; border:2px dashed #d8d0bb; border-radius:14px; padding:10px 14px; min-height:44px; font-weight:800;}
 .order-slot .num{width:22px; height:22px; border-radius:50%; background:var(--ink); color:#fff; font-size:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
@@ -376,6 +378,120 @@ function varyPoseSub(baseMin,baseMax,gapMin,gapMax){ return function(){ var a=ri
 function varyEncadre1000(baseMin,baseMax){ return function(){ var base=ri(baseMin,baseMax)*1000, off=ri(1,999); var mid=base+off; return {prompt:"Encadre "+fmtNum(mid)+" par deux milliers consécutifs.", mid:mid, answerA:base, answerB:base+1000}; }; }
 function varyRangeRound1000(baseMin,baseMax){ return function(){ var v=ri(baseMin,baseMax)*1000; return {prompt:"Complète avec un nombre qui convient : "+fmtNum(v-1)+" < ? < "+fmtNum(v+1), min:v-1, max:v+1}; }; }
 function varyNumberLine(min,max,step){ return function(){ var n=Math.round((max-min)/step); var idx=ri(1,n-1); return {value:min+idx*step}; }; }
+function varyNumberLineDec(min,max,step,decimals){ return function(){ var n=Math.round((max-min)/step); var idx=ri(1,n-1); var v=parseFloat((min+idx*step).toFixed(decimals)); return {value:v}; }; }
+function fmtEuro(n){ return n.toFixed(2).replace(".",",")+" €"; }
+function money(minC,maxC){ return ri(minC,maxC)/100; }
+
+/* Calcul mental — helpers additionnels (Chapitre 2) */
+function varyMultFixed(maxA,fixed){ return function(){ var a=ri(2,maxA); return {prompt:a+" × "+fixed, answer:a*fixed}; }; }
+function varyAddMissingRound(mult,maxK){ return function(){ var a=ri(1,maxK-1)*mult; var b=maxK*mult; return {prompt:fmtNum(a)+" + ? = "+fmtNum(b), answer:b-a}; }; }
+function varySubRoundHundred(maxH,maxGap){ return function(){ var h=ri(1,maxH); var b=h*100; var a=ri(b+10,b+maxGap); return {prompt:fmtNum(a)+" − "+fmtNum(b), answer:a-b}; }; }
+function varyAdd3RoundHundred(maxA,maxH){ return function(){ var a=ri(100,maxA); var b=ri(1,maxH)*100; return {prompt:fmtNum(a)+" + "+fmtNum(b), answer:a+b}; }; }
+function varyAddTen(maxBase){ return function(){ var a=ri(10,maxBase)*10; return {prompt:fmtNum(a)+" + 10", answer:a+10}; }; }
+function varyPoseMult1(digitsA,maxB){ return function(){ var a=ri(Math.pow(10,digitsA-1),Math.pow(10,digitsA)-1); var b=ri(2,maxB); return {prompt:"Calcule : "+fmtNum(a)+" × "+b, answer:a*b}; }; }
+function varyPoseMult2(maxA,maxB){ return function(){ var a=ri(100,maxA); var b=ri(11,maxB); return {prompt:"Pose et effectue : "+fmtNum(a)+" × "+b, answer:a*b}; }; }
+function varyPoseDivExact(maxDiv,maxQ){ return function(){ var div=ri(2,maxDiv), q=ri(2,maxQ); return {prompt:"Calcule : "+fmtNum(div*q)+" ÷ "+div, answer:q}; }; }
+function varyPoseDivExact2(maxDiv,maxQ){ return function(){ var div=ri(2,maxDiv), q=ri(10,maxQ); return {prompt:"Pose et effectue : "+fmtNum(div*q)+" ÷ "+div, answer:q}; }; }
+
+/* Figures géométriques sur quadrillage (aires) — Chapitre 2 */
+function svgOpenTag(w,h){ return '<svg class="figure-svg" viewBox="0 0 '+w+' '+h+'" xmlns="http://www.w3.org/2000/svg">'; }
+function gridLinesSvg(cols,rows,cellPx,stroke,strokeWidth){
+  var s = "";
+  for(var i=0;i<=cols;i++){ var x=i*cellPx; s += '<line x1="'+x+'" y1="0" x2="'+x+'" y2="'+(rows*cellPx)+'" stroke="'+stroke+'" stroke-width="'+strokeWidth+'"/>'; }
+  for(var j=0;j<=rows;j++){ var y=j*cellPx; s += '<line x1="0" y1="'+y+'" x2="'+(cols*cellPx)+'" y2="'+y+'" stroke="'+stroke+'" stroke-width="'+strokeWidth+'"/>'; }
+  return s;
+}
+function rectCells(c,r,w,h){ var out=[]; for(var i=0;i<w;i++) for(var j=0;j<h;j++) out.push({c:c+i,r:r+j}); return out; }
+function unionCells(){ var out=[]; for(var i=0;i<arguments.length;i++) out=out.concat(arguments[i]); return out; }
+function rightTriangleCells(n,offC,offR){
+  offC=offC||0; offR=offR||0;
+  var cells=[];
+  for(var r=0;r<n;r++){
+    for(var c=0;c<n-r-1;c++) cells.push({c:offC+c,r:offR+r});
+    cells.push({c:offC+(n-r-1), r:offR+r, half:"TL"});
+  }
+  return cells;
+}
+function cellArea(cell){ return cell.half ? 0.5 : 1; }
+function shapeArea(cells){ return cells.reduce(function(s,c){return s+cellArea(c);},0); }
+function shapeBBox(cells){
+  var minC=Infinity,minR=Infinity,maxC=-Infinity,maxR=-Infinity;
+  cells.forEach(function(c){ minC=Math.min(minC,c.c); minR=Math.min(minR,c.r); maxC=Math.max(maxC,c.c+1); maxR=Math.max(maxR,c.r+1); });
+  return {minC:minC,minR:minR,maxC:maxC,maxR:maxR,w:maxC-minC,h:maxR-minR};
+}
+function cellPointsPx(cell,cellPx,ox,oy){
+  var c=cell.c,r=cell.r, pts;
+  switch(cell.half){
+    case "TL": pts=[[c,r],[c+1,r],[c,r+1]]; break;
+    case "TR": pts=[[c,r],[c+1,r],[c+1,r+1]]; break;
+    case "BR": pts=[[c+1,r],[c+1,r+1],[c,r+1]]; break;
+    case "BL": pts=[[c,r],[c+1,r+1],[c,r+1]]; break;
+    default: pts=[[c,r],[c+1,r],[c+1,r+1],[c,r+1]];
+  }
+  return pts.map(function(p){ return ((p[0]*cellPx)+ox).toFixed(1)+","+((p[1]*cellPx)+oy).toFixed(1); }).join(" ");
+}
+function shapeFillSvg(cells,cellPx,ox,oy,color){
+  var s = "";
+  cells.forEach(function(cell){
+    s += '<polygon points="'+cellPointsPx(cell,cellPx,ox,oy)+'" fill="'+color+'" fill-opacity="0.6" stroke="'+color+'" stroke-width="1.5" stroke-linejoin="round"/>';
+  });
+  return s;
+}
+function figureShapesRow(shapeDefs,opts){
+  opts = opts || {};
+  var cellPx = opts.cellPx || 24;
+  var gap = opts.gap || 30;
+  var pad = 12;
+  var showLabel = opts.showLabel !== false;
+  var labelH = showLabel ? 24 : 0;
+  var x = pad, maxH = 0, parts = [];
+  shapeDefs.forEach(function(sd){
+    var bb = shapeBBox(sd.cells);
+    var w = bb.w*cellPx, h = bb.h*cellPx;
+    maxH = Math.max(maxH, h);
+    parts.push({sd:sd, bb:bb, x:x, w:w, h:h});
+    x += w + gap;
+  });
+  var totalW = x - gap + pad;
+  var totalH = maxH + pad*2 + labelH;
+  var svg = svgOpenTag(totalW, totalH);
+  parts.forEach(function(p){
+    var ox = p.x - p.bb.minC*cellPx;
+    var oy = pad - p.bb.minR*cellPx;
+    svg += '<g transform="translate('+p.x+','+pad+')">'+gridLinesSvg(p.bb.w,p.bb.h,cellPx,"#e3ded0",1)+'</g>';
+    svg += shapeFillSvg(p.sd.cells, cellPx, ox, oy, p.sd.color || "#4fb3c9");
+    if(showLabel) svg += '<text x="'+(p.x+p.w/2)+'" y="'+(pad+maxH+18)+'" font-size="14" font-weight="800" text-anchor="middle" fill="#2f2a44">'+p.sd.label+'</text>';
+  });
+  svg += '</svg>';
+  return svg;
+}
+function singleShapeFigure(cells,opts){
+  opts = opts || {};
+  var cellPx = opts.cellPx || 26;
+  var color = opts.color || "#4fb3c9";
+  var pad = 14;
+  var bb = shapeBBox(cells);
+  var w = bb.w*cellPx, h = bb.h*cellPx;
+  var legendItems = opts.legend || [];
+  var svg = svgOpenTag(w+pad*2+(legendItems.length?100:0), h+pad*2);
+  svg += '<g transform="translate('+pad+','+pad+')">';
+  svg += gridLinesSvg(bb.w, bb.h, cellPx, "#e3ded0", 1);
+  svg += shapeFillSvg(cells, cellPx, -bb.minC*cellPx, -bb.minR*cellPx, color);
+  if(opts.overlayStep){
+    var oc = opts.overlayStep.c||1, orr = opts.overlayStep.r||1;
+    for(var i=0;i<=bb.w;i+=oc){ var xx=i*cellPx; svg += '<line x1="'+xx+'" y1="0" x2="'+xx+'" y2="'+h+'" stroke="#2f2a44" stroke-width="2.5"/>'; }
+    for(var j=0;j<=bb.h;j+=orr){ var yy=j*cellPx; svg += '<line x1="0" y1="'+yy+'" x2="'+w+'" y2="'+yy+'" stroke="#2f2a44" stroke-width="2.5"/>'; }
+  }
+  svg += '</g>';
+  var lx = w+pad*2+8, ly = pad+2;
+  legendItems.forEach(function(li,idx){
+    var lw = (li.w||1)*14, lh = (li.h||1)*14;
+    svg += '<rect x="'+lx+'" y="'+(ly+idx*32)+'" width="'+lw+'" height="'+lh+'" fill="none" stroke="#2f2a44" stroke-width="2"/>';
+    svg += '<text x="'+(lx+lw+8)+'" y="'+(ly+idx*32+lh-1)+'" font-size="13" font-weight="700" fill="#6b6580">= '+li.label+'</text>';
+  });
+  svg += '</svg>';
+  return svg;
+}
 
 var DOMAIN_META = {
   nombres:   {label:"Nombres et Calculs", color:"var(--nombres)", dark:"var(--nombres-dark)", bg:"var(--nombres-bg)"},
@@ -556,6 +672,248 @@ var CH1_PROBLEME = [
     vary:function(){ var a=ri(10,30)/10, b=ri(30,70)/10; return {prompt:"Chaque matin, pour se rendre à l'école, Tom parcourt "+fmtDec(a)+" km à pied, puis "+fmtDec(b)+" km en bus. Quelle distance Tom parcourt-il chaque matin ?", answer:Math.round((a+b)*10)/10}; }}
 ];
 
+/* ================= CHAPITRE 2 — AIRES ================= */
+var SHAPE_PAL = ["#4fb3c9","#f2a3c1","#f7c948","#8fd39e","#c9a6e8","#f0906a"];
+var SHAPE_REF = "#a89cc8";
+
+var CH2_LECON = [
+  {id:"L1", type:"mcq_multi", prompt:"Quelles surfaces ont la même aire que la surface A ?",
+    figure:figureShapesRow([
+      {label:"A", cells:unionCells(rectCells(0,0,3,1),rectCells(0,1,2,1)), color:SHAPE_REF},
+      {label:"B", cells:unionCells(rectCells(0,0,1,3),rectCells(1,2,2,1)), color:SHAPE_PAL[0]},
+      {label:"C", cells:rectCells(0,0,2,3), color:SHAPE_PAL[1]},
+      {label:"D", cells:unionCells(rectCells(0,0,2,2),rectCells(2,1,1,1)), color:SHAPE_PAL[2]},
+      {label:"E", cells:rectCells(0,0,4,2), color:SHAPE_PAL[3]}
+    ]),
+    choices:["B","C","D","E"], correctSet:[0,2]},
+  {id:"L2", type:"order_label", prompt:"Range ces surfaces par ordre croissant d'aire (touche-les de la plus petite à la plus grande).", direction:"asc",
+    figure:figureShapesRow([
+      {label:"A", cells:unionCells(rectCells(0,0,2,1),rectCells(0,1,3,1)), color:SHAPE_PAL[0]},
+      {label:"B", cells:rectCells(0,0,2,4), color:SHAPE_PAL[1]},
+      {label:"C", cells:unionCells(rectCells(0,0,3,2),rectCells(3,0,1,1)), color:SHAPE_PAL[2]},
+      {label:"D", cells:unionCells(rectCells(0,0,2,2),rectCells(2,0,2,1)), color:SHAPE_PAL[3]}
+    ]),
+    items:[{label:"A",value:5},{label:"B",value:8},{label:"C",value:7},{label:"D",value:6}]},
+  {id:"L3", type:"order_label", prompt:"Range ces surfaces par ordre décroissant d'aire (touche-les de la plus grande à la plus petite).", direction:"desc",
+    figure:figureShapesRow([
+      {label:"A", cells:rectCells(0,0,4,1), color:SHAPE_PAL[0]},
+      {label:"B", cells:unionCells(rectCells(0,0,3,2),rectCells(3,0,1,1)), color:SHAPE_PAL[1]},
+      {label:"C", cells:unionCells(rectCells(0,0,2,2),rectCells(2,0,1,1)), color:SHAPE_PAL[2]},
+      {label:"D", cells:rectCells(0,0,3,2), color:SHAPE_PAL[3]}
+    ]),
+    items:[{label:"A",value:4},{label:"B",value:7},{label:"C",value:5},{label:"D",value:6}]},
+  {id:"L4", type:"mcq", prompt:"Léa cherche un pré à louer pour ses deux poneys. Elle veut louer le pré qui a la plus grande aire. Voici le plan de quatre prés représentés à la même échelle. Quel pré doit-elle louer ?",
+    figure:figureShapesRow([
+      {label:"Pré A", cells:rectCells(0,0,5,3), color:SHAPE_PAL[3]},
+      {label:"Pré B", cells:unionCells(rectCells(0,0,3,2),rectCells(3,0,2,4)), color:SHAPE_PAL[3]},
+      {label:"Pré C", cells:rectCells(0,0,4,4), color:SHAPE_PAL[3]},
+      {label:"Pré D", cells:unionCells(rectCells(0,0,6,2),rectCells(0,2,2,1)), color:SHAPE_PAL[3]}
+    ]),
+    choices:["Pré A","Pré B","Pré C","Pré D"], answerIndex:2},
+  {id:"L5", type:"mcq", prompt:"Deux classes ont peint un motif en rouge sur un quadrillage pour une fresque murale. Quel motif a nécessité le plus de peinture rouge ?",
+    figure:figureShapesRow([
+      {label:"Motif A", cells:unionCells(rectCells(1,0,4,1),rectCells(0,1,6,3),rectCells(2,4,2,1)), color:"#e4304f"},
+      {label:"Motif B", cells:unionCells(rectCells(0,0,2,2),rectCells(3,0,3,2),rectCells(1,2,5,2),rectCells(2,4,1,1)), color:"#e4304f"}
+    ]),
+    choices:["Motif A","Motif B","Autant l'un que l'autre"], answerIndex:0},
+  {id:"L6", type:"mcq_multi", prompt:"Quelles surfaces ont la même aire que la surface A ?",
+    figure:figureShapesRow([
+      {label:"A", cells:unionCells(rectCells(0,0,2,3),rectCells(2,0,1,1)), color:SHAPE_REF},
+      {label:"B", cells:rectCells(0,0,7,1), color:SHAPE_PAL[0]},
+      {label:"C", cells:unionCells(rectCells(0,0,3,2),rectCells(3,0,1,1)), color:SHAPE_PAL[1]},
+      {label:"D", cells:rectCells(0,0,2,4), color:SHAPE_PAL[2]},
+      {label:"E", cells:unionCells(rectCells(0,0,1,4),rectCells(1,0,2,2)), color:SHAPE_PAL[3]}
+    ]),
+    choices:["B","C","D","E"], correctSet:[0,1]},
+  {id:"L7", type:"mcq", prompt:"Quelle figure a la plus grande aire ?",
+    figure:figureShapesRow([
+      {label:"Figure A", cells:rightTriangleCells(4), color:SHAPE_PAL[4]},
+      {label:"Figure B", cells:unionCells(rectCells(0,0,3,3),rectCells(3,1,2,1)), color:SHAPE_PAL[5]}
+    ]),
+    choices:["Figure A","Figure B"], answerIndex:1},
+  {id:"L8", type:"numeric", prompt:"Détermine l'aire de cette figure en utilisant l'unité u.", answer:7,
+    figure:singleShapeFigure(unionCells(rectCells(0,0,3,1),rectCells(0,1,2,2)), {color:SHAPE_PAL[0], legend:[{label:"u",w:1,h:1}]})},
+  {id:"L9", type:"numeric", prompt:"Détermine l'aire de cette figure en utilisant l'unité u.", answer:8,
+    figure:singleShapeFigure(rightTriangleCells(4), {color:SHAPE_PAL[4], legend:[{label:"u",w:1,h:1}]})},
+  {id:"L10", type:"numeric", prompt:"Détermine l'aire de cette figure en utilisant l'unité u.", answer:12,
+    figure:singleShapeFigure(rectCells(0,0,4,3), {color:SHAPE_PAL[1], legend:[{label:"u",w:1,h:1}]})},
+  {id:"L11", type:"numeric", prompt:"Détermine l'aire de cette figure en utilisant l'unité u.", answer:10,
+    figure:singleShapeFigure(unionCells(rectCells(0,0,1,4),rectCells(1,0,3,1),rectCells(1,3,3,1)), {color:SHAPE_PAL[2], legend:[{label:"u",w:1,h:1}]})},
+  {id:"L12", type:"numeric", prompt:"Un rectangle a une aire de 12 u et une longueur de 4 u. Quelle est sa largeur (en u) ?", answer:3,
+    vary:function(){ var l1=ri(2,7), l2=ri(2,7); return {prompt:"Un rectangle a une aire de "+(l1*l2)+" u et une longueur de "+l1+" u. Quelle est sa largeur (en u) ?", answer:l2}; }},
+  {id:"L13", type:"numeric", prompt:"Un rectangle a une aire de 18 u et une largeur de 3 u. Quelle est sa longueur (en u) ?", answer:6,
+    vary:function(){ var l1=ri(2,7), l2=ri(2,7); return {prompt:"Un rectangle a une aire de "+(l1*l2)+" u et une largeur de "+l2+" u. Quelle est sa longueur (en u) ?", answer:l1}; }},
+  {id:"L14", type:"numeric", prompt:"Détermine l'aire de cette figure en utilisant l'unité u1.", answer:12,
+    figure:singleShapeFigure(rectCells(0,0,6,2), {color:SHAPE_PAL[0], overlayStep:{c:2,r:2}, legend:[{label:"u1",w:1,h:1},{label:"u2",w:2,h:2}]})},
+  {id:"L15", type:"numeric", prompt:"Détermine l'aire de cette même figure en utilisant l'unité u2 (le grand carré).", answer:3,
+    figure:singleShapeFigure(rectCells(0,0,6,2), {color:SHAPE_PAL[0], overlayStep:{c:2,r:2}, legend:[{label:"u1",w:1,h:1},{label:"u2",w:2,h:2}]})},
+  {id:"L16", type:"numeric", prompt:"Un carreleur a commencé à carreler un mur avec un motif à damier (cases colorées). Calcule le nombre de carreaux du motif qui manquent pour que le travail soit achevé.", answer:4, unit:"carreaux",
+    figure:(function(){
+      var done=[{c:0,r:0},{c:2,r:0},{c:4,r:0},{c:1,r:1},{c:3,r:1},{c:5,r:1},{c:0,r:2},{c:2,r:2}];
+      var remaining=[{c:4,r:2},{c:1,r:3},{c:3,r:3},{c:5,r:3}];
+      var cellPx=28, cols=6, rows=4, pad=14;
+      var svg = svgOpenTag(cols*cellPx+pad*2, rows*cellPx+pad*2);
+      svg += '<g transform="translate('+pad+','+pad+')">';
+      svg += gridLinesSvg(cols, rows, cellPx, "#d8d0bb", 1.5);
+      svg += shapeFillSvg(done, cellPx, 0, 0, "#3b8fd9");
+      remaining.forEach(function(cell){
+        svg += '<rect x="'+(cell.c*cellPx+3)+'" y="'+(cell.r*cellPx+3)+'" width="'+(cellPx-6)+'" height="'+(cellPx-6)+'" fill="none" stroke="#b9c9cf" stroke-width="2" stroke-dasharray="4,3"/>';
+      });
+      svg += '</g></svg>';
+      return svg;
+    })()}
+];
+
+var CH2_JESAIS = {
+  title:"Je sais déterminer l'aire d'une figure en changeant d'unité de référence.",
+  rows:[
+    {q:"Quelle est l'aire de la surface A en prenant u pour unité ?",
+      figure:singleShapeFigure(rectCells(0,0,4,2), {color:SHAPE_PAL[0], legend:[{label:"u",w:1,h:1}]}),
+      choices:["8 u","14 u","16 u"], correct:[0]},
+    {q:"Quelle est l'aire de cette même surface A en prenant v pour unité (v = un rectangle de 2 carrés u) ?",
+      figure:singleShapeFigure(rectCells(0,0,4,2), {color:SHAPE_PAL[0], overlayStep:{c:1,r:2}, legend:[{label:"u",w:1,h:1},{label:"v",w:1,h:2}]}),
+      choices:["8 v","4 v","16 v"], correct:[1]},
+    {q:"Quelle est l'aire de la figure orange en prenant u pour unité ?",
+      figure:singleShapeFigure(unionCells(rectCells(0,0,3,2),rectCells(3,0,1,3)), {color:"#f0906a", legend:[{label:"u",w:1,h:1}]}),
+      choices:["7 u","9 u","11 u"], correct:[1]},
+    {q:"Quelle est l'aire de la figure en prenant u pour unité ?",
+      figure:singleShapeFigure(rectCells(0,0,4,4), {color:SHAPE_PAL[2], legend:[{label:"u",w:1,h:1}]}),
+      choices:["12 u","16 u","20 u"], correct:[1]},
+    {q:"Quelle est l'aire de cette même figure en prenant w pour unité (w = un carré de 4 carreaux u) ?",
+      figure:singleShapeFigure(rectCells(0,0,4,4), {color:SHAPE_PAL[2], overlayStep:{c:2,r:2}, legend:[{label:"u",w:1,h:1},{label:"w",w:2,h:2}]}),
+      choices:["4 w","8 w","16 w"], correct:[0]}
+  ]
+};
+
+var CH2_FLASH = [
+  {id:"F1", type:"number_line", prompt:"Écris le nombre indiqué par la flèche.", min:6.8, max:7.6, step:0.1, value:7.3, vary:varyNumberLineDec(6.8,7.6,0.1,1)},
+  {id:"F2", type:"number_line", prompt:"Écris le nombre indiqué par la flèche.", min:5, max:6, step:0.1, value:5.6, vary:varyNumberLineDec(5,6,0.1,1)},
+  {id:"F3", type:"number_line", prompt:"Écris le nombre indiqué par la flèche.", min:7, max:8, step:0.1, value:7.7, vary:varyNumberLineDec(7,8,0.1,1)},
+  {id:"F4", type:"number_line", prompt:"Écris le nombre indiqué par la flèche.", min:0, max:1, step:0.1, value:0.6, vary:varyNumberLineDec(0,1,0.1,1)},
+  {id:"F5", type:"number_line", prompt:"Écris le nombre indiqué par la flèche.", min:7.4, max:7.9, step:0.1, value:7.6, vary:varyNumberLineDec(7.4,7.9,0.1,1)}
+];
+
+var CH2_CALCUL = [
+  Object.assign({id:"C1",type:"numeric",prompt:"6 + 8",answer:14,vary:varyAdd2(9,9)},seanceTag(1)),
+  Object.assign({id:"C2",type:"numeric",prompt:"3 + ? = 10",answer:7,vary:varyAddMissing(9,9)},seanceTag(1)),
+  Object.assign({id:"C3",type:"numeric",prompt:"12 − ? = 5",answer:7,
+    vary:function(){ var a=ri(10,18); var ans=ri(2,Math.min(9,a-2)); return {prompt:fmtNum(a)+" − ? = "+fmtNum(a-ans), answer:ans}; }},seanceTag(1)),
+  Object.assign({id:"C4",type:"numeric",prompt:"Combien ajouter à 7 pour obtenir 15 ?",answer:8,vary:varyAddTo(9,9)},seanceTag(1)),
+  Object.assign({id:"C5",type:"numeric",prompt:"Quelle est la somme de 9 et 8 ?",answer:17,vary:varySomme(9,9)},seanceTag(1)),
+  Object.assign({id:"C6",type:"numeric",prompt:"Quelle est la différence entre 14 et 5 ?",answer:9,vary:varyDiff(10,18,9)},seanceTag(1)),
+  Object.assign({id:"C7",type:"numeric",prompt:"70 + ? = 100",answer:30,vary:varyAddMissingRound(10,10)},seanceTag(1)),
+  Object.assign({id:"C8",type:"numeric",prompt:"600 + ? = ...",answer:40,
+    vary:function(){ var h=ri(2,9)*100; var gap=ri(1,9)*10; var a=h-gap; return {prompt:fmtNum(a)+" + ? = "+fmtNum(h), answer:gap}; }},seanceTag(1)),
+  Object.assign({id:"C9",type:"numeric",prompt:"40 + 58",answer:98,vary:varyAdd2(80,80)},seanceTag(1)),
+  Object.assign({id:"C10",type:"numeric",prompt:"247 + 300",answer:547,vary:varyAdd3RoundHundred(899,9)},seanceTag(1)),
+  Object.assign({id:"C11",type:"numeric",prompt:"800 + ? = 1000",answer:200,vary:varyAddMissingRound(100,10)},seanceTag(1)),
+  Object.assign({id:"C12",type:"numeric",prompt:"51 × 10",answer:510,vary:varyMultFixed(90,10)},seanceTag(1)),
+  Object.assign({id:"C13",type:"numeric",prompt:"6 × 100",answer:600,vary:varyMultFixed(9,100)},seanceTag(1)),
+  Object.assign({id:"C14",type:"numeric",prompt:"650 + 10",answer:660,vary:varyAddTen(90)},seanceTag(1)),
+
+  Object.assign({id:"C15",type:"numeric",prompt:"6 + 9",answer:15,vary:varyAdd2(9,9)},seanceTag(2)),
+  Object.assign({id:"C16",type:"numeric",prompt:"8 + ? = 16",answer:8,vary:varyAddMissing(9,9)},seanceTag(2)),
+  Object.assign({id:"C17",type:"numeric",prompt:"14 − ? = 8",answer:6,
+    vary:function(){ var a=ri(10,18); var ans=ri(2,Math.min(9,a-2)); return {prompt:fmtNum(a)+" − ? = "+fmtNum(a-ans), answer:ans}; }},seanceTag(2)),
+  Object.assign({id:"C18",type:"numeric",prompt:"Combien ajouter à 2 pour obtenir 11 ?",answer:9,vary:varyAddTo(9,9)},seanceTag(2)),
+  Object.assign({id:"C19",type:"numeric",prompt:"Quelle est la somme de 9 et 5 ?",answer:14,vary:varySomme(9,9)},seanceTag(2)),
+  Object.assign({id:"C20",type:"numeric",prompt:"Quelle est la différence entre 15 et 7 ?",answer:8,vary:varyDiff(10,18,9)},seanceTag(2)),
+  Object.assign({id:"C21",type:"numeric",prompt:"⏱ Calcul chrono : 37 + 25",answer:62,vary:chronoWrap(varyAdd2(70,40))},seanceTag(2)),
+  Object.assign({id:"C22",type:"numeric",prompt:"⏱ Calcul chrono : 48 + 21",answer:69,vary:chronoWrap(varyAdd2(70,40))},seanceTag(2)),
+  Object.assign({id:"C23",type:"numeric",prompt:"⏱ Calcul chrono : 40 + 83",answer:123,vary:chronoWrap(varyAdd2(90,90))},seanceTag(2)),
+  Object.assign({id:"C24",type:"numeric",prompt:"⏱ Calcul chrono : 764 − 200",answer:564,vary:chronoWrap(varySubRoundHundred(9,300))},seanceTag(2)),
+  Object.assign({id:"C25",type:"numeric",prompt:"⏱ Calcul chrono : 51 + 9",answer:60,vary:chronoWrap(varyAdd2(90,9))},seanceTag(2)),
+  Object.assign({id:"C26",type:"numeric",prompt:"⏱ Calcul chrono : 700 + ? = 1000",answer:300,vary:chronoWrap(varyAddMissingRound(100,10))},seanceTag(2)),
+  Object.assign({id:"C27",type:"numeric",prompt:"⏱ Calcul chrono : 48 × 10",answer:480,vary:chronoWrap(varyMultFixed(90,10))},seanceTag(2)),
+  Object.assign({id:"C28",type:"numeric",prompt:"⏱ Calcul chrono : 8 × 100",answer:800,vary:chronoWrap(varyMultFixed(9,100))},seanceTag(2)),
+  Object.assign({id:"C29",type:"numeric",prompt:"⏱ Calcul chrono : 400 + 500",answer:900,
+    vary:chronoWrap(function(){ var a=ri(1,9)*100, b=ri(1,9)*100; return {prompt:fmtNum(a)+" + "+fmtNum(b), answer:a+b}; })},seanceTag(2)),
+  Object.assign({id:"C30",type:"numeric",prompt:"⏱ Calcul chrono : 46 + 19",answer:65,vary:chronoWrap(varyAdd2(90,90))},seanceTag(2)),
+
+  Object.assign({id:"C31",type:"numeric",prompt:"9 + 8",answer:17,vary:varyAdd2(9,9)},seanceTag(3)),
+  Object.assign({id:"C32",type:"numeric",prompt:"4 + ? = 12",answer:8,vary:varyAddMissing(9,9)},seanceTag(3)),
+  Object.assign({id:"C33",type:"numeric",prompt:"13 − ? = 7",answer:6,
+    vary:function(){ var a=ri(10,18); var ans=ri(2,Math.min(9,a-2)); return {prompt:fmtNum(a)+" − ? = "+fmtNum(a-ans), answer:ans}; }},seanceTag(3)),
+  Object.assign({id:"C34",type:"numeric",prompt:"Combien ajouter à 6 pour obtenir 11 ?",answer:5,vary:varyAddTo(9,9)},seanceTag(3)),
+  Object.assign({id:"C35",type:"numeric",prompt:"Quelle est la somme de 8 et 5 ?",answer:13,vary:varySomme(9,9)},seanceTag(3)),
+  Object.assign({id:"C36",type:"numeric",prompt:"Quelle est la différence entre 16 et 6 ?",answer:10,vary:varyDiff(10,18,9)},seanceTag(3)),
+  Object.assign({id:"C37",type:"numeric",prompt:"Julie a 36 ans. Léon a 40 ans de plus qu'elle. Quel âge a Léon ?",answer:76,
+    vary:function(){ var julie=ri(20,50), plus=ri(10,40); return {prompt:"Julie a "+julie+" ans. Léon a "+plus+" ans de plus qu'elle. Quel âge a Léon ?", answer:julie+plus}; }},seanceTag(3)),
+  Object.assign({id:"C38",type:"numeric",prompt:"Un maraîcher a planté 32 rangées de 100 salades. Combien de salades a-t-il plantées ?",answer:3200,
+    vary:function(){ var rows=ri(10,60); return {prompt:"Un maraîcher a planté "+rows+" rangées de 100 salades. Combien de salades a-t-il plantées ?", answer:rows*100}; }},seanceTag(3)),
+  Object.assign({id:"C39",type:"numeric",prompt:"Au cours d'un match de basket, l'équipe rouge a marqué 19 points en première mi-temps et 37 points en deuxième mi-temps. Quel est le score de l'équipe rouge à la fin du match ?",answer:56,
+    vary:function(){ var a=ri(10,40), b=ri(10,45); return {prompt:"Au cours d'un match de basket, l'équipe rouge a marqué "+a+" points en première mi-temps et "+b+" points en deuxième mi-temps. Quel est le score de l'équipe rouge à la fin du match ?", answer:a+b}; }},seanceTag(3)),
+  Object.assign({id:"C40",type:"numeric",prompt:"Un cycliste doit effectuer un parcours de 1 000 mètres. Son compteur indique qu'il a déjà franchi 780 mètres. Quelle distance lui reste-t-il à couvrir ?",answer:220,unit:"m",
+    vary:function(){ var done=ri(100,900); return {prompt:"Un cycliste doit effectuer un parcours de 1 000 mètres. Son compteur indique qu'il a déjà franchi "+done+" mètres. Quelle distance lui reste-t-il à couvrir ?", answer:1000-done}; }},seanceTag(3)),
+  Object.assign({id:"C41",type:"numeric",prompt:"J'ai 83 billes. J'en perds 9 à la récréation. Combien de billes me reste-t-il après la récréation ?",answer:74,
+    vary:function(){ var total=ri(30,99), lost=ri(5,Math.min(25,total-5)); return {prompt:"J'ai "+total+" billes. J'en perds "+lost+" à la récréation. Combien de billes me reste-t-il après la récréation ?", answer:total-lost}; }},seanceTag(3)),
+
+  Object.assign({id:"C42",type:"numeric",prompt:"7 + 4",answer:11,vary:varyAdd2(9,9)},seanceTag(4)),
+  Object.assign({id:"C43",type:"numeric",prompt:"3 + ? = 11",answer:8,vary:varyAddMissing(9,9)},seanceTag(4)),
+  Object.assign({id:"C44",type:"numeric",prompt:"11 − ? = 6",answer:5,
+    vary:function(){ var a=ri(10,18); var ans=ri(2,Math.min(9,a-2)); return {prompt:fmtNum(a)+" − ? = "+fmtNum(a-ans), answer:ans}; }},seanceTag(4)),
+  Object.assign({id:"C45",type:"numeric",prompt:"Combien ajouter à 6 pour obtenir 15 ?",answer:9,vary:varyAddTo(9,9)},seanceTag(4)),
+  Object.assign({id:"C46",type:"numeric",prompt:"Quelle est la somme de 9 et 8 ?",answer:17,vary:varySomme(9,9)},seanceTag(4)),
+  Object.assign({id:"C47",type:"numeric",prompt:"Quelle est la différence entre 16 et 9 ?",answer:7,vary:varyDiff(10,18,9)},seanceTag(4)),
+  Object.assign({id:"C48",type:"numeric",prompt:"⏱ Calcul chrono : 48 + 9",answer:57,vary:chronoWrap(varyAdd2(90,9))},seanceTag(4)),
+  Object.assign({id:"C49",type:"numeric",prompt:"⏱ Calcul chrono : 30 × 4",answer:120,vary:chronoWrap(varyMultFixed(90,4))},seanceTag(4)),
+  Object.assign({id:"C50",type:"numeric",prompt:"⏱ Calcul chrono : 824 − 200",answer:624,vary:chronoWrap(varySubRoundHundred(9,300))},seanceTag(4)),
+  Object.assign({id:"C51",type:"numeric",prompt:"⏱ Calcul chrono : 60 + 53",answer:113,vary:chronoWrap(varyAdd2(90,90))},seanceTag(4)),
+  Object.assign({id:"C52",type:"numeric",prompt:"⏱ Calcul chrono : 10 × 81",answer:810,vary:chronoWrap(varyMultFixed(90,10))},seanceTag(4)),
+  Object.assign({id:"C53",type:"numeric",prompt:"⏱ Calcul chrono : 17 − 9",answer:8,vary:chronoWrap(varySub(10,18,9))},seanceTag(4)),
+  Object.assign({id:"C54",type:"numeric",prompt:"⏱ Calcul chrono : 70 + ? = 100",answer:30,vary:chronoWrap(varyAddMissingRound(10,10))},seanceTag(4)),
+  Object.assign({id:"C55",type:"numeric",prompt:"⏱ Calcul chrono : 28 + 21",answer:49,vary:chronoWrap(varyAdd2(90,90))},seanceTag(4)),
+  Object.assign({id:"C56",type:"numeric",prompt:"⏱ Calcul chrono : 300 + 400",answer:700,
+    vary:chronoWrap(function(){ var a=ri(1,9)*100, b=ri(1,9)*100; return {prompt:fmtNum(a)+" + "+fmtNum(b), answer:a+b}; })},seanceTag(4)),
+  Object.assign({id:"C57",type:"numeric",prompt:"⏱ Calcul chrono : 23 × 100",answer:2300,vary:chronoWrap(varyMultFixed(90,100))},seanceTag(4)),
+
+  Object.assign({id:"C58",type:"numeric",prompt:"Calcule : 608 × 4",answer:2432,vary:varyPoseMult1(3,9)},seanceTag(5)),
+  Object.assign({id:"C59",type:"numeric",prompt:"Calcule : 684 ÷ 4",answer:171,vary:varyPoseDivExact(9,99)},seanceTag(5)),
+  Object.assign({id:"C60",type:"numeric",prompt:"Pose et effectue : 327 × 24",answer:7848,vary:varyPoseMult2(400,40)},seanceTag(5)),
+  Object.assign({id:"C61",type:"numeric",prompt:"Pose et effectue : 112 ÷ 7",answer:16,vary:varyPoseDivExact2(12,30)},seanceTag(5))
+];
+
+var CH2_PROBLEME = [
+  {id:"P1", type:"numeric", prompt:"Tom a 2,30 € dans sa poche. Combien lui manque-t-il pour acheter un jeu qui coûte 4 € ?", answer:1.7, unit:"€",
+    vary:function(){ var poche=money(150,380); var manque=money(50,250); var jeu=Math.round((poche+manque)*100)/100; return {prompt:"Tom a "+fmtEuro(poche)+" dans sa poche. Combien lui manque-t-il pour acheter un jeu qui coûte "+fmtEuro(jeu)+" ?", answer:Math.round(manque*100)/100}; }},
+  {id:"P2", type:"numeric", prompt:"Lilou a 4 € dans sa poche. Elle dépense 1,70 €. Combien lui reste-t-il ?", answer:2.3, unit:"€",
+    vary:function(){ var poche=money(300,700); var depense=money(100,poche*100-100); var reste=Math.round((poche-depense)*100)/100; return {prompt:"Lilou a "+fmtEuro(poche)+" dans sa poche. Elle dépense "+fmtEuro(depense)+". Combien lui reste-t-il ?", answer:reste}; }},
+  {id:"P3", type:"numeric", prompt:"Léo achète un stylo à 1,70 € et un compas à 2,30 €. Combien doit-il payer ?", answer:4, unit:"€",
+    vary:function(){ var a=money(100,300), b=money(150,350); return {prompt:"Léo achète un stylo à "+fmtEuro(a)+" et un compas à "+fmtEuro(b)+". Combien doit-il payer ?", answer:Math.round((a+b)*100)/100}; }},
+  {id:"P4", type:"numeric", prompt:"Zoé entre dans un magasin où elle achète un compas à 4 €. Elle sort du magasin avec 2,30 €. Avec combien d'argent Zoé était-elle entrée dans le magasin ?", answer:6.3, unit:"€",
+    vary:function(){ var achat=money(200,500), reste=money(100,400); return {prompt:"Zoé entre dans un magasin où elle achète un compas à "+fmtEuro(achat)+". Elle sort du magasin avec "+fmtEuro(reste)+". Avec combien d'argent Zoé était-elle entrée dans le magasin ?", answer:Math.round((achat+reste)*100)/100}; }},
+  {id:"P5", type:"numeric", prompt:"Zoé entre dans un magasin avec 40 € en poche. Elle s'achète un pull et ressort avec 25,20 €. Quel est le prix de ce pull ?", answer:14.8, unit:"€",
+    vary:function(){ var depart=ri(30,50); var ressort=money(1000,depart*100-500); var prix=Math.round((depart-ressort)*100)/100; return {prompt:"Zoé entre dans un magasin avec "+depart+" € en poche. Elle s'achète un pull et ressort avec "+fmtEuro(ressort)+". Quel est le prix de ce pull ?", answer:prix}; }},
+  {id:"P6", type:"numeric", prompt:"Tom a 35 € en poche. Il entre dans un magasin et s'achète une paire de chaussures à 27 €. Avec combien d'argent ressort-il du magasin ?", answer:8, unit:"€",
+    vary:function(){ var poche=ri(25,60), prix=ri(10,poche-5); return {prompt:"Tom a "+poche+" € en poche. Il entre dans un magasin et s'achète une paire de chaussures à "+prix+" €. Avec combien d'argent ressort-il du magasin ?", answer:poche-prix}; }},
+  {id:"P7", type:"numeric", prompt:"Léo a 12,10 € dans sa tirelire et 5,60 € dans sa poche. Il se rend à la librairie pour acheter un roman à 7,50 € et une bande dessinée à 9,90 €. Combien d'argent lui reste-t-il une fois ces deux achats payés ?", answer:0.3, unit:"€",
+    vary:function(){
+      var cost1=money(500,900), cost2=money(600,1200); var totalCost=cost1+cost2;
+      var surplus=money(50,500); var totalMoney=Math.round((totalCost+surplus)*100)/100;
+      var tirelire=Math.round(totalMoney*0.6*100)/100; var poche=Math.round((totalMoney-tirelire)*100)/100;
+      var reste=Math.round((totalMoney-totalCost)*100)/100;
+      return {prompt:"Léo a "+fmtEuro(tirelire)+" dans sa tirelire et "+fmtEuro(poche)+" dans sa poche. Il se rend à la librairie pour acheter un roman à "+fmtEuro(cost1)+" et une bande dessinée à "+fmtEuro(cost2)+". Combien d'argent lui reste-t-il une fois ces deux achats payés ?", answer:reste};
+    }},
+  {id:"P8", type:"numeric", prompt:"Leila s'achète trois pulls dont les prix sont affichés avec des remises comme suit : 32 € au lieu de 40 € pour le premier ; 24 € au lieu de 30 € pour le deuxième ; 40 € au lieu de 50 € pour le troisième. Quel est le montant total des remises dont Leila bénéficie ?", answer:24, unit:"€",
+    vary:function(){
+      var o1=ri(30,60), d1=o1-ri(5,15); var o2=ri(20,45), d2=o2-ri(4,12); var o3=ri(35,70), d3=o3-ri(6,18);
+      return {prompt:"Leila s'achète trois pulls dont les prix sont affichés avec des remises comme suit : "+d1+" € au lieu de "+o1+" € pour le premier ; "+d2+" € au lieu de "+o2+" € pour le deuxième ; "+d3+" € au lieu de "+o3+" € pour le troisième. Quel est le montant total des remises dont Leila bénéficie ?", answer:(o1-d1)+(o2-d2)+(o3-d3)};
+    }},
+  {id:"P9", type:"numeric", prompt:"Charlie entre dans un magasin où il achète une paire de chaussures à 17,55 €. Il sort du magasin avec 4,25 €. Avec combien d'argent était-il entré dans le magasin ?", answer:21.8, unit:"€",
+    vary:function(){ var achat=money(1000,2500), reste=money(100,900); return {prompt:"Charlie entre dans un magasin où il achète une paire de chaussures à "+fmtEuro(achat)+". Il sort du magasin avec "+fmtEuro(reste)+". Avec combien d'argent était-il entré dans le magasin ?", answer:Math.round((achat+reste)*100)/100}; }},
+  {id:"P10", type:"numeric", prompt:"Aya a un billet de 20 € en poche. Elle achète un pantalon à 13,50 € et une casquette à 8,80 €. Elle n'a pas assez d'argent. Combien lui manque-t-il ?", answer:2.3, unit:"€",
+    vary:function(){
+      var budget=ri(18,32); var item1=money(800,1600), item2=money(500,1200);
+      var total=Math.round((item1+item2)*100)/100;
+      if(total<=budget){
+        var reste=Math.round((budget-total)*100)/100;
+        return {prompt:"Aya a un billet de "+budget+" € en poche. Elle achète un pantalon à "+fmtEuro(item1)+" et une casquette à "+fmtEuro(item2)+". Elle a assez d'argent pour payer les deux. Combien lui rendra-t-on à la caisse ?", answer:reste};
+      }
+      var manque=Math.round((total-budget)*100)/100;
+      return {prompt:"Aya a un billet de "+budget+" € en poche. Elle souhaite acheter un pantalon à "+fmtEuro(item1)+" et une casquette à "+fmtEuro(item2)+". Elle n'a pas assez d'argent. Combien lui manque-t-il ?", answer:manque};
+    }}
+];
+
 var CONTENT = {
   periods:[
     {id:1, chapters:[1,2,3,4,5,6,7]},
@@ -572,7 +930,13 @@ var CONTENT = {
         calcul:{label:"Calcul", chrono:true, timeLimit:12, exercises:CH1_CALCUL},
         probleme:{label:"Atelier problèmes", exercises:CH1_PROBLEME}
       }},
-    2: chStub(2,"Aires (1)","grandeurs",1),
+    2: {id:2, title:"Aires (1)", domain:"grandeurs", period:1,
+      blocks:{
+        lecon:{label:"Leçon", exercises:CH2_LECON, recap:CH2_JESAIS},
+        flash:{label:"Flash Maths", chrono:true, timeLimit:20, exercises:CH2_FLASH},
+        calcul:{label:"Calcul", chrono:true, timeLimit:12, exercises:CH2_CALCUL},
+        probleme:{label:"Atelier problèmes", exercises:CH2_PROBLEME}
+      }},
     3: chStub(3,"Fractions (1)","nombres",1),
     4: chStub(4,"Droites perpendiculaires","espace",1),
     5: chStub(5,"Fractions (2)","nombres",1),
@@ -940,7 +1304,7 @@ function buildBlockItems(ch, blockKey){
   var items = block.exercises.map(function(e){ return Object.assign({},e); });
   if(block.recap){
     block.recap.rows.forEach(function(row,i){
-      items.push({id:"JS"+i, type:"mcq_multi", prompt:row.q, choices:row.choices, correctSet:row.correct, recap:true});
+      items.push({id:"JS"+i, type:"mcq_multi", prompt:row.q, choices:row.choices, correctSet:row.correct, figure:row.figure, recap:true});
     });
   }
   return items;
@@ -1018,7 +1382,7 @@ function renderExerciseBody(container, item){
   Q_CHECK = function(){ return {correct:false}; };
   if(item.type==="numeric"){
     var step = (item.answer % 1 !== 0) ? "0.1" : "1";
-    container.innerHTML = '<div class="num-input-row"><input type="number" step="'+step+'" inputmode="decimal" autocomplete="off" class="num-input" id="numin" placeholder="?"> '+(item.unit?'<span class="unit-label">'+item.unit+'</span>':'')+'</div>';
+    container.innerHTML = (item.figure?'<div class="figure-wrap">'+item.figure+'</div>':'')+'<div class="num-input-row"><input type="number" step="'+step+'" inputmode="decimal" autocomplete="off" class="num-input" id="numin" placeholder="?"> '+(item.unit?'<span class="unit-label">'+item.unit+'</span>':'')+'</div>';
     var inp = document.getElementById("numin");
     inp.value = "";
     setTimeout(function(){inp.focus();},50);
@@ -1054,7 +1418,7 @@ function renderExerciseBody(container, item){
     };
   }
   else if(item.type==="mcq"){
-    var html = '<div class="choice-list">';
+    var html = (item.figure?'<div class="figure-wrap">'+item.figure+'</div>':'')+'<div class="choice-list">';
     item.choices.forEach(function(c,i){ html += '<div class="choice" data-i="'+i+'">'+c+'</div>'; });
     html += '</div>';
     container.innerHTML = html;
@@ -1076,7 +1440,7 @@ function renderExerciseBody(container, item){
     };
   }
   else if(item.type==="mcq_multi"){
-    var html2 = '<div class="choice-list">';
+    var html2 = (item.figure?'<div class="figure-wrap">'+item.figure+'</div>':'')+'<div class="choice-list">';
     item.choices.forEach(function(c,i){ html2 += '<div class="choice" data-i="'+i+'">'+c+'</div>'; });
     html2 += '</div><div class="q-sub" style="margin-top:12px">Plusieurs réponses sont parfois possibles.</div>';
     container.innerHTML = html2;
@@ -1190,14 +1554,59 @@ function renderExerciseBody(container, item){
       return {correct:ok, explain:"L'ordre attendu était : "+target.map(fmtNum).join(" → ")+"."};
     };
   }
+  else if(item.type==="order_label"){
+    var poolL = item.items.slice(); shuffleArr(poolL);
+    var targetL = item.items.slice().sort(function(a,b){ return item.direction==="desc" ? b.value-a.value : a.value-b.value; });
+    var htmlL = (item.figure?'<div class="figure-wrap">'+item.figure+'</div>':'')+'<div class="order-list" id="order-slots">';
+    for(var iL=0;iL<targetL.length;iL++) htmlL += '<div class="order-slot" data-slot="'+iL+'"><span class="num">'+(iL+1)+'</span><span class="val"></span></div>';
+    htmlL += '</div><div class="order-pool" id="order-pool">';
+    poolL.forEach(function(n){ htmlL += '<span class="chip" data-n="'+n.label+'">'+n.label+'</span>'; });
+    htmlL += '</div>';
+    container.innerHTML = htmlL;
+    var placedL = [];
+    function refreshPoolL(){
+      container.querySelectorAll("#order-pool .chip").forEach(function(c){
+        c.classList.toggle("picked", placedL.indexOf(c.dataset.n)>=0);
+      });
+    }
+    container.querySelectorAll("#order-pool .chip").forEach(function(c){
+      c.addEventListener("click", function(){
+        var n = c.dataset.n;
+        if(placedL.indexOf(n)>=0) return;
+        if(placedL.length>=targetL.length) return;
+        placedL.push(n);
+        var slot = container.querySelector('.order-slot[data-slot="'+(placedL.length-1)+'"] .val');
+        slot.textContent = n;
+        refreshPoolL();
+      });
+    });
+    container.querySelectorAll(".order-slot").forEach(function(sEl){
+      sEl.addEventListener("click", function(){
+        var i = parseInt(sEl.dataset.slot,10);
+        if(i < placedL.length){ placedL.splice(i,1); rebuildSlotsL(); refreshPoolL(); }
+      });
+    });
+    function rebuildSlotsL(){
+      container.querySelectorAll(".order-slot").forEach(function(sEl,i){
+        sEl.querySelector(".val").textContent = i<placedL.length ? placedL[i] : "";
+      });
+    }
+    Q_CHECK = function(){
+      var targetLabels = targetL.map(function(t){return t.label;});
+      var ok = placedL.length===targetLabels.length && placedL.every(function(v,i){return v===targetLabels[i];});
+      return {correct:ok, explain:"L'ordre attendu était : "+targetLabels.join(" → ")+"."};
+    };
+  }
   else if(item.type==="number_line"){
     var w=560,h=110, pad=30;
     var x = function(v){ return pad + (v-item.min)/(item.max-item.min)*(w-2*pad); };
     var svg = '<svg class="line-svg" viewBox="0 0 '+w+' '+h+'">';
     svg += '<line x1="'+pad+'" y1="60" x2="'+(w-pad)+'" y2="60" stroke="#2f2a44" stroke-width="3"/>';
-    for(var v=item.min; v<=item.max+0.0001; v+=item.step){
+    var tickCount = Math.round((item.max-item.min)/item.step);
+    for(var ti=0; ti<=tickCount; ti++){
+      var v = Math.round((item.min+ti*item.step)*1000)/1000;
       svg += '<line x1="'+x(v)+'" y1="52" x2="'+x(v)+'" y2="68" stroke="#2f2a44" stroke-width="3"/>';
-      if(v===item.min || v>=item.max-0.0001){
+      if(ti===0 || ti===tickCount){
         svg += '<text x="'+x(v)+'" y="88" font-size="13" font-weight="700" text-anchor="middle" fill="#6b6580">'+fmtNum(v)+'</text>';
       }
     }

@@ -1,10 +1,10 @@
 # Spécifications fonctionnelles — App Maths CM2
 
-2026-09-16 · @Someone · mis à jour le 2026-09-18 (reflète l'état réel de l'app après développement du Chapitre 1) · mis à jour le 2026-09-24 (refonte du barème d'étoiles et des récompenses)
+2026-09-16 · @Someone · mis à jour le 2026-09-18 (reflète l'état réel de l'app après développement du Chapitre 1) · mis à jour le 2026-09-24 (refonte du barème d'étoiles et des récompenses) · mis à jour le 2026-09-24 (validation/refus/annulation des demandes de récompenses, limite hebdomadaire par récompense) · mis à jour le 2026-09-24 (Chapitre 2 "Aires" jouable, nouveaux types d'exercices géométriques)
 
 Application web autonome (HTML, iPad/Safari) pour l'entraînement quotidien en maths, basée sur le manuel *Maths au CM2* (Accès éditions), en suivant la progression de la classe.
 
-> **État actuel** : le moteur complet est développé et le **Chapitre 1** ("Nombres entiers jusqu'à 999 999") est entièrement jouable et vérifié. Les chapitres 2 à 35 existent dans la navigation mais affichent "Contenu à venir" tant que leurs photos n'ont pas été envoyées. L'enfant s'appelle **Nola** (prénom codé en dur dans l'app, cf. §1).
+> **État actuel** : le moteur complet est développé. Le **Chapitre 1** ("Nombres entiers jusqu'à 999 999") et le **Chapitre 2** ("Aires") sont entièrement jouables. Les chapitres 3 à 35 existent dans la navigation mais affichent "Contenu à venir" tant que leurs photos n'ont pas été envoyées. L'enfant s'appelle **Nola** (prénom codé en dur dans l'app, cf. §1).
 
 ## 1. Vue d'ensemble et principes
 
@@ -58,10 +58,14 @@ Types réellement implémentés dans le moteur (le Chapitre 1 n'a pas eu besoin 
 - **Décomposition par étiquettes** (`decomposition`) : assembler des étiquettes (milliers/centaines/dizaines/unités) pour représenter un nombre — remplace les exercices à représentation visuelle 3D (cubes) du manuel
 - **Rangement** (`order`) : toucher des nombres dans l'ordre croissant/décroissant (type ajouté en cours de développement, non prévu initialement)
 - **Droite graduée** (`number_line`) : lire la valeur indiquée par une flèche sur un axe gradué ; seuls les repères de début et de fin affichent leur valeur, les graduations intermédiaires restent muettes pour ne pas trivialiser l'exercice
+- **Rangement de figures** (`order_label`, ajouté pour le Chapitre 2) : variante de `order` où l'on range des figures (identifiées par une lettre) au lieu de nombres, en s'appuyant sur une aire cachée associée à chaque figure
+- **Figure géométrique jointe** (`figure`, ajouté pour le Chapitre 2) : champ optionnel disponible sur `numeric`, `mcq`, `mcq_multi` et `order_label`, affichant une ou plusieurs figures dessinées en SVG sur un quadrillage (unité de mesure, légende, grille secondaire pour changer d'unité) au-dessus de la question — utilisé pour tous les exercices d'aires du Chapitre 2
 
 Chaque exercice affiche un feedback immédiat (icône + couleur : vert/coche pour une bonne réponse, rouge/croix sinon) après la réponse, avec la bonne réponse et une courte explication en cas d'erreur.
 
-**Variation des nombres à chaque partie** (ajouté après la première version) : pour éviter que Nola mémorise une réponse plutôt que la méthode, la plupart des exercices à réponse numérique (saisie libre, encadrements, droite graduée, décomposition) régénèrent des nombres aléatoires différents à chaque lancement du bloc — que ce soit la première fois ou en rejouant. La structure et le niveau de difficulté restent identiques, seuls les nombres changent. Sur le Chapitre 1, 93 des 110 exercices en bénéficient ; les QCM, le tri par ordre et le tableau récapitulatif "Je sais" restent fixes pour l'instant (risque de générer des mauvaises réponses incohérentes si randomisés).
+**Variation des nombres à chaque partie** (ajouté après la première version) : pour éviter que Nola mémorise une réponse plutôt que la méthode, la plupart des exercices à réponse numérique (saisie libre, encadrements, droite graduée, décomposition) régénèrent des nombres aléatoires différents à chaque lancement du bloc — que ce soit la première fois ou en rejouant. La structure et le niveau de difficulté restent identiques, seuls les nombres changent. Sur le Chapitre 1, 93 des 110 exercices en bénéficient ; les QCM, le tri par ordre et le tableau récapitulatif "Je sais" restent fixes pour l'instant (risque de générer des mauvaises réponses incohérentes si randomisés). Sur le Chapitre 2, les exercices géométriques (figures sur quadrillage, comparaisons d'aires, tris de figures) sont fixes pour la même raison — seuls le Flash Maths (droite graduée décimale), le Calcul et l'Atelier problèmes varient à chaque partie.
+
+**Figures géométriques du Chapitre 2** : les figures ne sont pas des reproductions pixel par pixel du manuel (dont on ne dispose pas du corrigé officiel) mais des figures originales, redessinées en SVG à partir de carrés unité assemblés (aires et disposition contrôlées avec précision à la conception), de même structure et niveau de difficulté que celles du manuel — cohérent avec le principe déjà appliqué aux problèmes contextualisés (§9).
 
 ## 5. Système de score, validation et récompenses
 
@@ -97,11 +101,14 @@ Les étoiles gagnées à un exercice (voir barème ci-dessus) alimentent **direc
 | 80 ★ | Une sortie spéciale (cinéma, parc...) | tous les 1 à 2 mois |
 
 - Catalogue entièrement **éditable par le parent** (ajout, suppression, et **réordonnancement par glisser-déposer** via une poignée dédiée — au doigt sur iPad ou à la souris)
-- **Échange** : l'enfant consulte son solde et peut "demander" une récompense une fois le seuil atteint (le coût est débité immédiatement) ; la remise de la récompense reste validée par le parent hors appli, qui peut marquer une demande comme "Remise" dans l'app
+- **Demande** : l'enfant consulte son solde et peut "demander" une récompense une fois le seuil atteint (le coût est débité immédiatement) ; la demande apparaît dans une section "En attente de validation" en haut de l'écran, et la récompense disparaît du catalogue tant qu'elle est en attente (voir limite hebdomadaire ci-dessous)
+- **Validation / refus par le parent** (protégé par le code parent, voir "Accès parent") : le parent peut **valider** une demande en attente (la récompense est considérée comme remise, les étoiles restent débitées) ou la **refuser** (les étoiles sont automatiquement recréditées à l'enfant et la demande annulée)
+- **Annulation par l'enfant** : tant qu'une demande n'a pas été traitée par le parent, l'enfant peut l'annuler lui-même via un lien "Annuler ma demande" (sans code parent) — les étoiles sont recréditées, pour lui permettre de changer d'avis et choisir une autre récompense
+- **Limite hebdomadaire** : une même récompense ne peut pas être redemandée plus d'une fois par semaine (semaine ISO, lundi 00:00), même si l'enfant a assez d'étoiles ; elle réapparaît dans le catalogue dès que la demande est annulée, refusée, ou dès la semaine suivante
 
 ### Accès parent (ajouté, non prévu initialement)
 
-- La gestion du catalogue est protégée par un **code parent à 4 chiffres** (écran de saisie façon code de vérification, 4 cases séparées, validation automatique à la 4ᵉ saisie, code erroné = animation + message)
+- La gestion du catalogue, ainsi que la **validation ou le refus d'une demande de récompense**, sont protégés par un **code parent à 4 chiffres** (écran de saisie façon code de vérification, 4 cases séparées, validation automatique à la 4ᵉ saisie, code erroné = animation + message)
 - Dans cette même zone protégée, un bouton **"Réinitialiser le score et le temps"** permet au parent de tout remettre à zéro (progression, streak, temps de jeu, étoiles) avec une double confirmation ; le catalogue de récompenses configuré n'est pas affecté par cette réinitialisation
 
 ## 6. Charte graphique
@@ -124,7 +131,7 @@ Les étoiles gagnées à un exercice (voir barème ci-dessus) alimentent **direc
 3. **Chapitre** : accès aux 4 blocs (Leçon, Flash Maths, Calcul, Atelier problèmes) avec leur meilleur score et leurs étoiles
 4. **Session d'exercices** : déroulé des questions d'un bloc avec compteur "x / y", jauge de progression et minuteur (largeur fixe pour ne pas décaler la jauge pendant le décompte) ; bouton **Valider** (sombre) visuellement distinct du bouton **Continuer** (vert, avec flèche) affiché après la correction ; feedback immédiat par question
 5. **Résultat** : score final, étoiles, icône contextuelle (trophée ≥80%, pouce levé 70-79%, pousse verte "continue de t'entraîner" <70%), récapitulatif des erreurs, option "Rejouer les erreurs"
-6. **Récompenses** : solde d'étoiles, catalogue réordonnable par glisser-déposer, bouton "Demander" une récompense, accès parent protégé par code (gestion du catalogue + réinitialisation)
+6. **Récompenses** : solde d'étoiles, section "En attente de validation" (avec valider/refuser côté parent, et "Annuler ma demande" côté enfant), catalogue réordonnable par glisser-déposer et filtré des récompenses déjà demandées dans la semaine, bouton "Demander" une récompense, accès parent protégé par code (gestion du catalogue + réinitialisation + validation/refus des demandes)
 7. **Progression** : chapitres maîtrisés, streak, temps cette semaine, temps d'entraînement total, taux de réussite par domaine, vue d'ensemble des 35 chapitres
 
 ## 8. Données et persistance
@@ -145,5 +152,5 @@ Les étoiles gagnées à un exercice (voir barème ci-dessus) alimentent **direc
 - Pas de multi-enfants, pas de compte ni de synchronisation cloud
 - Pas de vue "reporting" parent distincte, mais un accès parent protégé par code existe désormais pour la gestion du catalogue et la réinitialisation des données
 - Notifications ou rappels quotidiens : non implémenté
-- Contenu limité à la Période 1, Chapitre 1 pour le lancement ; les chapitres 2 à 35 sont en attente des photos correspondantes (structure de navigation déjà en place, affichage "Contenu à venir")
+- Contenu disponible : Chapitres 1 et 2 de la Période 1 ; les chapitres 3 à 35 sont en attente des photos correspondantes (structure de navigation déjà en place, affichage "Contenu à venir")
 - Horloge analogique et identification visuelle : types d'exercices prévus au §4 mais pas encore implémentés dans le moteur, faute de contenu du Chapitre 1 en ayant besoin — à construire au moment où un chapitre futur les requiert
