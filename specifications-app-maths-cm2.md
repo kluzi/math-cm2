@@ -1,10 +1,10 @@
 # Spécifications fonctionnelles — App Maths CM2
 
-2026-09-16 · @Someone · mis à jour le 2026-09-18 (reflète l'état réel de l'app après développement du Chapitre 1) · mis à jour le 2026-09-24 (refonte du barème d'étoiles et des récompenses) · mis à jour le 2026-09-24 (validation/refus/annulation des demandes de récompenses, limite hebdomadaire par récompense) · mis à jour le 2026-09-24 (Chapitre 2 "Aires" jouable, nouveaux types d'exercices géométriques)
+2026-09-16 · @Someone · mis à jour le 2026-09-18 (reflète l'état réel de l'app après développement du Chapitre 1) · mis à jour le 2026-09-24 (refonte du barème d'étoiles et des récompenses) · mis à jour le 2026-09-24 (validation/refus/annulation des demandes de récompenses, limite hebdomadaire par récompense) · mis à jour le 2026-09-24 (Chapitre 2 "Aires" jouable, nouveaux types d'exercices géométriques) · mis à jour le 2026-10-26 (Chapitres 3 et 4 "Fractions" jouables, nouveaux types d'exercices, 36 chapitres)
 
 Application web autonome (HTML, iPad/Safari) pour l'entraînement quotidien en maths, basée sur le manuel *Maths au CM2* (Accès éditions), en suivant la progression de la classe.
 
-> **État actuel** : le moteur complet est développé. Le **Chapitre 1** ("Nombres entiers jusqu'à 999 999") et le **Chapitre 2** ("Aires") sont entièrement jouables. Les chapitres 3 à 35 existent dans la navigation mais affichent "Contenu à venir" tant que leurs photos n'ont pas été envoyées. L'enfant s'appelle **Nola** (prénom codé en dur dans l'app, cf. §1).
+> **État actuel** : le moteur complet est développé. Le **Chapitre 1** ("Nombres entiers jusqu'à 999 999") , le **Chapitre 2** ("Aires (1)"), le **Chapitre 3** ("Fractions (1)") et le **Chapitre 4** ("Fractions (2)") sont entièrement jouables. Les chapitres 5 à 36 existent dans la navigation mais affichent "Contenu à venir" tant que leurs photos n'ont pas été envoyées. L'enfant s'appelle **Nola** (prénom codé en dur dans l'app, cf. §1).
 
 ## 1. Vue d'ensemble et principes
 
@@ -19,8 +19,8 @@ Application web autonome (HTML, iPad/Safari) pour l'entraînement quotidien en m
 
 - **Périodes** : suivent la découpe du manuel (Période 1 à 5)
 - **Accueil en accordéon** : seule la période **en cours** (celle du premier chapitre non maîtrisé) est dépliée par défaut, avec un badge doré "EN COURS" ; les autres périodes sont repliées (chevron cliquable pour les ouvrir/fermer). Une période entièrement maîtrisée affiche un badge vert **"ACQUIS"** à la place
-- **Chapitres** : 35 au total, numérotés comme dans le manuel, regroupés par domaine (Nombres et Calculs, Grandeurs et Mesures, Espace et Géométrie)
-- **Déblocage progressif** : un chapitre n'est jouable qu'une fois le(s) précédent(s) de la période validé(s)
+- **Chapitres** : 36 au total, numérotés et titrés comme dans le manuel (les thèmes qui reviennent sont numérotés : Aires (1) à (3), Fractions (1) et (2), Nombres décimaux (1) à (4), Algèbre (1) à (3), Probabilités (1) et (2)), regroupés par domaine (Nombres et Calculs, Grandeurs et Mesures, Espace et Géométrie)
+- **Déblocage progressif** : un chapitre n'est jouable qu'une fois le(s) précédent(s) de la période validé(s) — **exception** : les Chapitres 3 et 4 sont débloqués d'office (drapeau `alwaysUnlocked`), pour que Nola puisse les travailler dans l'ordre de son choix, sans avoir maîtrisé les chapitres précédents
 - **Validation d'un chapitre** : score minimum de 80% atteint sur chacun des 4 blocs (voir section 3)
 - **Accès libre** : une fois un chapitre débloqué, il reste accessible à tout moment, sans limite de session ni horaire imposé
 - **Rejouer** : un bloc déjà validé peut être refait à volonté pour s'entraîner ; le meilleur score est conservé
@@ -60,12 +60,21 @@ Types réellement implémentés dans le moteur (le Chapitre 1 n'a pas eu besoin 
 - **Droite graduée** (`number_line`) : lire la valeur indiquée par une flèche sur un axe gradué ; seuls les repères de début et de fin affichent leur valeur, les graduations intermédiaires restent muettes pour ne pas trivialiser l'exercice
 - **Rangement de figures** (`order_label`, ajouté pour le Chapitre 2) : variante de `order` où l'on range des figures (identifiées par une lettre) au lieu de nombres, en s'appuyant sur une aire cachée associée à chaque figure
 - **Figure géométrique jointe** (`figure`, ajouté pour le Chapitre 2) : champ optionnel disponible sur `numeric`, `mcq`, `mcq_multi` et `order_label`, affichant une ou plusieurs figures dessinées en SVG sur un quadrillage (unité de mesure, légende, grille secondaire pour changer d'unité) au-dessus de la question — utilisé pour tous les exercices d'aires du Chapitre 2
+- **Saisie de fraction** (`frac_input`, ajouté pour le Chapitre 3) : deux cases numérateur / dénominateur séparées par une barre de fraction. Par défaut toute fraction égale à la bonne réponse est acceptée (ex. 2/8 pour 1/4) ; avec `exact:true` (exercices « écris en chiffres… ») il faut la fraction attendue. Peut recevoir une `figure`
+- **Fractions dans les énoncés et les choix** : les fractions s'affichent en vertical (numérateur au-dessus du dénominateur) dans les énoncés, les choix de QCM et les étiquettes de rangement ; `order_label` accepte un champ `html` par étiquette pour ranger des fractions
+- **Figures de fractions** (Chapitres 3 et 4) : disques, bandes et quadrillages partagés en parts égales dont certaines sont coloriées, et demi-droites graduées avec flèches (lettres A, B, C…) ; **solides** (cube, pavé droit, boule, cône, cylindre, pyramide, prisme droit) dessinés en perspective pour le Flash Maths du Chapitre 4. Toutes ces figures sont dessinées en SVG, sans reproduire celles du manuel
+- **Durée par exercice** (`timeLimit`) : un exercice peut redéfinir la durée du chrono du bloc (ex. 45 à 60 s pour une opération posée du Calcul, au lieu de 12 s)
 
 Chaque exercice affiche un feedback immédiat (icône + couleur : vert/coche pour une bonne réponse, rouge/croix sinon) après la réponse, avec la bonne réponse et une courte explication en cas d'erreur.
 
-**Variation des nombres à chaque partie** (ajouté après la première version) : pour éviter que Nola mémorise une réponse plutôt que la méthode, la plupart des exercices à réponse numérique (saisie libre, encadrements, droite graduée, décomposition) régénèrent des nombres aléatoires différents à chaque lancement du bloc — que ce soit la première fois ou en rejouant. La structure et le niveau de difficulté restent identiques, seuls les nombres changent. Sur le Chapitre 1, 93 des 110 exercices en bénéficient ; les QCM, le tri par ordre et le tableau récapitulatif "Je sais" restent fixes pour l'instant (risque de générer des mauvaises réponses incohérentes si randomisés). Sur le Chapitre 2, les exercices géométriques (figures sur quadrillage, comparaisons d'aires, tris de figures) sont fixes pour la même raison — seuls le Flash Maths (droite graduée décimale), le Calcul et l'Atelier problèmes varient à chaque partie.
+**Variation des nombres à chaque partie** (ajouté après la première version) : pour éviter que Nola mémorise une réponse plutôt que la méthode, la plupart des exercices à réponse numérique (saisie libre, encadrements, droite graduée, décomposition) régénèrent des nombres aléatoires différents à chaque lancement du bloc — que ce soit la première fois ou en rejouant. La structure et le niveau de difficulté restent identiques, seuls les nombres changent. Sur le Chapitre 1, 93 des 110 exercices en bénéficient ; les QCM, le tri par ordre et le tableau récapitulatif "Je sais" restent fixes pour l'instant (risque de générer des mauvaises réponses incohérentes si randomisés). Sur les Chapitres 3 et 4, presque tous les exercices varient à chaque partie (y compris les figures de fractions, générées avec de nouvelles parts coloriées) ; seuls restent fixes les exercices à figure dessinée à la main (comparaisons de figures, solides) et le tableau « Je sais ». Sur le Chapitre 2, les exercices géométriques (figures sur quadrillage, comparaisons d'aires, tris de figures) sont fixes pour la même raison — seuls le Flash Maths (droite graduée décimale), le Calcul et l'Atelier problèmes varient à chaque partie.
 
 **Figures géométriques du Chapitre 2** : les figures ne sont pas des reproductions pixel par pixel du manuel (dont on ne dispose pas du corrigé officiel) mais des figures originales, redessinées en SVG à partir de carrés unité assemblés (aires et disposition contrôlées avec précision à la conception), de même structure et niveau de difficulté que celles du manuel — cohérent avec le principe déjà appliqué aux problèmes contextualisés (§9).
+
+**Contenu des Chapitres 3 et 4 (Période 1)** :
+- **Chapitre 3 — Fractions (1)** : lire, écrire et représenter une fraction, fractions égales, fraction supérieure à 1 écrite comme somme d'un entier et d'une fraction. Flash Maths = les quatre opérations (additions/soustractions posées, vocabulaire somme/terme/produit/facteur en vrai/faux, avec un chrono long de 45 à 75 s pour les opérations posées). Calcul = ajouter ou soustraire 8, 9, 18, 19… 98, 99 (Séances 1 à 4) puis multiplications et divisions posées
+- **Chapitre 4 — Fractions (2)** : placer une fraction sur une demi-droite graduée, comparer et ranger des fractions, fraction d'une quantité. Flash Maths = reconnaître et nommer les solides. Calcul = tables de multiplication par 5 et 10 dans les deux sens (Séances 1 à 4) puis additions et soustractions posées de nombres décimaux. Atelier problèmes = problèmes multiplicatifs (schémas en barres du manuel non repris)
+- Dans les deux chapitres, les consignes du manuel qui demandent de dessiner ou de colorier sur papier (ex. « dessine la tablette complète ») sont transformées en questions à réponse saisie ou à choix, sans changer la notion travaillée
 
 ## 5. Système de score, validation et récompenses
 
@@ -132,7 +141,7 @@ Les étoiles gagnées à un exercice (voir barème ci-dessus) alimentent **direc
 4. **Session d'exercices** : déroulé des questions d'un bloc avec compteur "x / y", jauge de progression et minuteur (largeur fixe pour ne pas décaler la jauge pendant le décompte) ; bouton **Valider** (sombre) visuellement distinct du bouton **Continuer** (vert, avec flèche) affiché après la correction ; feedback immédiat par question
 5. **Résultat** : score final, étoiles, icône contextuelle (trophée ≥80%, pouce levé 70-79%, pousse verte "continue de t'entraîner" <70%), récapitulatif des erreurs, option "Rejouer les erreurs"
 6. **Récompenses** : solde d'étoiles, section "En attente de validation" (avec valider/refuser côté parent, et "Annuler ma demande" côté enfant), catalogue réordonnable par glisser-déposer et filtré des récompenses déjà demandées dans la semaine, bouton "Demander" une récompense, accès parent protégé par code (gestion du catalogue + réinitialisation + validation/refus des demandes)
-7. **Progression** : chapitres maîtrisés, streak, temps cette semaine, temps d'entraînement total, taux de réussite par domaine, vue d'ensemble des 35 chapitres
+7. **Progression** : chapitres maîtrisés, streak, temps cette semaine, temps d'entraînement total, taux de réussite par domaine, vue d'ensemble des 36 chapitres
 
 ## 8. Données et persistance
 
@@ -152,5 +161,5 @@ Les étoiles gagnées à un exercice (voir barème ci-dessus) alimentent **direc
 - Pas de multi-enfants, pas de compte ni de synchronisation cloud
 - Pas de vue "reporting" parent distincte, mais un accès parent protégé par code existe désormais pour la gestion du catalogue et la réinitialisation des données
 - Notifications ou rappels quotidiens : non implémenté
-- Contenu disponible : Chapitres 1 et 2 de la Période 1 ; les chapitres 3 à 35 sont en attente des photos correspondantes (structure de navigation déjà en place, affichage "Contenu à venir")
+- Contenu disponible : Chapitres 1 à 4 de la Période 1 ; les chapitres 5 à 36 sont en attente des photos correspondantes (structure de navigation déjà en place, affichage "Contenu à venir")
 - Horloge analogique et identification visuelle : types d'exercices prévus au §4 mais pas encore implémentés dans le moteur, faute de contenu du Chapitre 1 en ayant besoin — à construire au moment où un chapitre futur les requiert
