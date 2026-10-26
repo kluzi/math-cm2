@@ -1611,14 +1611,14 @@ var CONTENT = {
         calcul:{label:"Calcul", chrono:true, timeLimit:12, exercises:CH2_CALCUL},
         probleme:{label:"Atelier problèmes", exercises:CH2_PROBLEME}
       }},
-    3: {id:3, title:"Fractions (1)", domain:"nombres", period:1, alwaysUnlocked:true,
+    3: {id:3, title:"Fractions (1)", domain:"nombres", period:1,
       blocks:{
         lecon:{label:"Leçon", exercises:CH3_LECON, recap:CH3_JESAIS},
         flash:{label:"Flash Maths", chrono:true, timeLimit:20, exercises:CH3_FLASH},
         calcul:{label:"Calcul", chrono:true, timeLimit:12, exercises:CH3_CALCUL},
         probleme:{label:"Atelier problèmes", exercises:CH3_PROBLEME}
       }},
-    4: {id:4, title:"Fractions (2)", domain:"nombres", period:1, alwaysUnlocked:true,
+    4: {id:4, title:"Fractions (2)", domain:"nombres", period:1,
       blocks:{
         lecon:{label:"Leçon", exercises:CH4_LECON, recap:CH4_JESAIS},
         flash:{label:"Flash Maths", chrono:true, timeLimit:20, exercises:CH4_FLASH},
@@ -1731,7 +1731,7 @@ function chapterStarted(ch){
   return false;
 }
 function chapterUnlocked(ch){
-  if(ch.alwaysUnlocked) return true;
+  if(ch.blocks) return true; // tout chapitre dont le contenu existe est jouable, dans l'ordre que l'on veut
   var period = CONTENT.periods.find(function(p){return p.id===ch.period;});
   var idx = period.chapters.indexOf(ch.id);
   if(idx===0) return true;

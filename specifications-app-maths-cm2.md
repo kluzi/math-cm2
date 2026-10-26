@@ -20,7 +20,7 @@ Application web autonome (HTML, iPad/Safari) pour l'entraînement quotidien en m
 - **Périodes** : suivent la découpe du manuel (Période 1 à 5)
 - **Accueil en accordéon** : seule la période **en cours** (celle du premier chapitre non maîtrisé) est dépliée par défaut, avec un badge doré "EN COURS" ; les autres périodes sont repliées (chevron cliquable pour les ouvrir/fermer). Une période entièrement maîtrisée affiche un badge vert **"ACQUIS"** à la place
 - **Chapitres** : 36 au total, numérotés et titrés comme dans le manuel (les thèmes qui reviennent sont numérotés : Aires (1) à (3), Fractions (1) et (2), Nombres décimaux (1) à (4), Algèbre (1) à (3), Probabilités (1) et (2)), regroupés par domaine (Nombres et Calculs, Grandeurs et Mesures, Espace et Géométrie)
-- **Déblocage progressif** : un chapitre n'est jouable qu'une fois le(s) précédent(s) de la période validé(s) — **exception** : les Chapitres 3 et 4 sont débloqués d'office (drapeau `alwaysUnlocked`), pour que Nola puisse les travailler dans l'ordre de son choix, sans avoir maîtrisé les chapitres précédents
+- **Déblocage progressif** : un chapitre n'est jouable qu'une fois le(s) précédent(s) de la période validé(s) — **exception** : tout chapitre dont le contenu est disponible (aujourd'hui les Chapitres 1 à 4) est débloqué d'office, pour que Nola puisse les travailler dans l'ordre de son choix, sans avoir maîtrisé les chapitres précédents
 - **Validation d'un chapitre** : score minimum de 80% atteint sur chacun des 4 blocs (voir section 3)
 - **Accès libre** : une fois un chapitre débloqué, il reste accessible à tout moment, sans limite de session ni horaire imposé
 - **Rejouer** : un bloc déjà validé peut être refait à volonté pour s'entraîner ; le meilleur score est conservé
