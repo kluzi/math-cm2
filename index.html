@@ -1588,6 +1588,310 @@ var CH4_PROBLEME = [
     vary:function(){ var days = pick([3,4,5]), weeks = ri(30,38), dist = pick([1.5,2,2.5,3,3.5]); return {prompt:"Yasmina va à l'école "+days+" jours par semaine pendant "+weeks+" semaines par an. Son école est à "+fd(dist,1)+" km de son domicile et elle déjeune à chaque fois au restaurant scolaire (un aller-retour par jour). Quelle distance parcourt-elle chaque année pour aller à l'école et en revenir ?", answer:round2(days*weeks*2*dist)}; }}
 ];
 
+
+/* ================= CHAPITRE 5 — ALGÈBRE (1) ================= */
+/* ---- suites de motifs évolutifs ---- */
+var PAT_COLORS = {circle:"#c2185b", square:"#9ccc3c", triangle:"#ec4a8c", heart:"#e4304f"};
+var PAT_NOUN = {circle:"jetons", square:"carrés", triangle:"triangles", heart:"cœurs"};
+var PAT_WORDS = [{cap:"Jour", art:"le jour"}, {cap:"Étape", art:"l'étape"}, {cap:"Motif", art:"le motif"}];
+function patShapeSvg(kind,x,y,s,color){
+  var r = s*0.42;
+  if(kind==="circle") return '<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="'+r.toFixed(1)+'" fill="'+color+'" stroke="'+FR_INK+'" stroke-width="1.5"/>';
+  if(kind==="square") return '<rect x="'+(x-r).toFixed(1)+'" y="'+(y-r).toFixed(1)+'" width="'+(2*r).toFixed(1)+'" height="'+(2*r).toFixed(1)+'" fill="'+color+'" stroke="'+FR_INK+'" stroke-width="1.5"/>';
+  if(kind==="triangle") return '<polygon points="'+svgPts([[x,y-r],[x+r,y+r*0.85],[x-r,y+r*0.85]])+'" fill="'+color+'" stroke="'+FR_INK+'" stroke-width="1.5" stroke-linejoin="round"/>';
+  return '<path transform="translate('+x.toFixed(1)+','+(y+1).toFixed(1)+') scale('+(s*0.46).toFixed(2)+')" d="M0,0.8 C-1.1,-0.1 -1,-0.9 -0.5,-0.9 C-0.2,-0.9 0,-0.7 0,-0.5 C0,-0.7 0.2,-0.9 0.5,-0.9 C1,-0.9 1.1,-0.1 0,0.8 Z" fill="'+color+'" stroke="'+FR_INK+'" stroke-width="1.5" vector-effect="non-scaling-stroke" stroke-linejoin="round"/>';
+}
+function rowsCells(counts){
+  var cells = [];
+  counts.forEach(function(c,r){ for(var i=0;i<c;i++) cells.push([i-(c-1)/2, r]); });
+  return cells;
+}
+/* nombre de motifs à l'étape n = a × n + b */
+var PAT_FAMS = [
+  {a:2, b:1,  cells:function(n){ return rowsCells([n,n+1]); }},
+  {a:3, b:2,  cells:function(n){ return rowsCells([n,n+1,n+1]); }},
+  {a:4, b:2,  cells:function(n){ return rowsCells([n,n,n+1,n+1]); }},
+  {a:2, b:2,  cells:function(n){ return rowsCells([n,n+2]); }},
+  {a:3, b:3,  cells:function(n){ return rowsCells([n+1,n+1,n+1]); }},
+  {a:4, b:1,  cells:function(n){ var c = [[0,0]]; for(var k=1;k<=n;k++) c.push([k,0],[-k,0],[0,k],[0,-k]); return c; }},
+  {a:2, b:-1, cells:function(n){ var c = [], k; for(k=0;k<n;k++) c.push([0,-k]); for(k=1;k<n;k++) c.push([k,0]); return c; }}
+];
+function patternFigure(cellsFn,steps,kind,word){
+  var cell = 24, gap = 34, pad = 12, parts = [], x = pad, maxH = 0, i;
+  for(i=1;i<=steps;i++){
+    var cs = cellsFn(i), minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    cs.forEach(function(p){ minX = Math.min(minX,p[0]); maxX = Math.max(maxX,p[0]); minY = Math.min(minY,p[1]); maxY = Math.max(maxY,p[1]); });
+    var w = (maxX-minX+1)*cell, h = (maxY-minY+1)*cell;
+    parts.push({cs:cs, minX:minX, minY:minY, x:x, w:w, h:h, n:i});
+    maxH = Math.max(maxH,h);
+    x += w + gap;
+  }
+  var svg = fracSvgOpen(x-gap+pad, maxH+pad*2+22);
+  parts.forEach(function(p){
+    p.cs.forEach(function(q){
+      svg += patShapeSvg(kind, p.x+(q[0]-p.minX+0.5)*cell, pad+(maxH-p.h)+(q[1]-p.minY+0.5)*cell, cell, PAT_COLORS[kind]);
+    });
+    svg += '<text x="'+(p.x+p.w/2)+'" y="'+(pad+maxH+20)+'" font-size="13" font-style="italic" font-weight="700" text-anchor="middle" fill="#6b6580">'+word+' '+p.n+'</text>';
+  });
+  return svg + '</svg>';
+}
+/* Étapes de segments : n triangles accolés, n+2 points roses (2n+1 segments) */
+function segStripFigure(steps){
+  var dx = 28, gap = 36, pad = 14, x = pad, parts = [], i, j;
+  for(i=1;i<=steps;i++){ parts.push({x:x, n:i}); x += (i+1)*dx + gap; }
+  var svg = fracSvgOpen(x-gap+pad, 40+pad*2+22);
+  parts.forEach(function(p){
+    var pts = [];
+    for(j=0;j<p.n+2;j++) pts.push([p.x+j*dx, pad+(j%2===0?40:2)]);
+    for(j=0;j<pts.length-1;j++) svg += '<line x1="'+pts[j][0]+'" y1="'+pts[j][1]+'" x2="'+pts[j+1][0]+'" y2="'+pts[j+1][1]+'" stroke="#3fae62" stroke-width="3"/>';
+    for(j=0;j<pts.length-2;j++) svg += '<line x1="'+pts[j][0]+'" y1="'+pts[j][1]+'" x2="'+pts[j+2][0]+'" y2="'+pts[j+2][1]+'" stroke="#3fae62" stroke-width="3"/>';
+    pts.forEach(function(q){ svg += '<circle cx="'+q[0]+'" cy="'+q[1]+'" r="6" fill="#ec4a8c"/>'; });
+    svg += '<text x="'+(p.x+(p.n+1)*dx/2)+'" y="'+(pad+40+22)+'" font-size="13" font-style="italic" font-weight="700" text-anchor="middle" fill="#6b6580">Étape '+p.n+'</text>';
+  });
+  return svg + '</svg>';
+}
+function patExpr(a,b,n){
+  if(b>0) return b+" + ("+a+" × "+n+")";
+  if(b<0) return "("+a+" × "+n+") − "+(-b);
+  return a+" × "+n;
+}
+function patSetup(){
+  var fam = pick(PAT_FAMS), kind = pick(["circle","square","triangle","heart"]), word = pick(PAT_WORDS);
+  return {fam:fam, kind:kind, word:word, noun:PAT_NOUN[kind], figure:patternFigure(fam.cells,3,kind,word.cap)};
+}
+function varyPatternCount(){
+  var s = patSetup(), n = pick([4,5,6,7,8,10,12,20]);
+  return {prompt:"Combien de "+s.noun+" faut-il dessiner pour "+s.word.art+" "+n+" ?", figure:s.figure, answer:s.fam.a*n+s.fam.b};
+}
+function varyPatternExpr(){
+  var s = patSetup(), a = s.fam.a, b = s.fam.b, n = pick([12,15,20,25,30]), v = a*n+b;
+  var correct = {t:patExpr(a,b,n), v:v};
+  var cands = [
+    b!==0 ? {t:a+" + ("+Math.abs(b)+" × "+n+")", v:a+Math.abs(b)*n} : {t:a+" + "+n, v:a+n},
+    {t:"("+a+" + "+Math.abs(b)+") × "+n, v:(a+Math.abs(b))*n},
+    {t:patExpr(a+1,b,n), v:(a+1)*n+b},
+    b!==0 ? {t:a+" × "+n, v:a*n} : {t:a+" × ("+n+" + 1)", v:a*(n+1)}
+  ];
+  var wrong = [], seen = {}; seen[v] = true;
+  cands.forEach(function(c){ if(!seen[c.v] && wrong.length<3){ seen[c.v] = true; wrong.push(c); } });
+  var opts = shuffled([correct].concat(wrong));
+  return {prompt:"Laquelle de ces expressions permet de calculer le nombre de "+s.noun+" pour "+s.word.art+" "+n+" ?", figure:s.figure,
+    choices:opts.map(function(o){ return o.t; }), answerIndex:opts.indexOf(correct)};
+}
+function varyPatternDay(){
+  var s = patSetup(), k = ri(5,40), total = s.fam.a*k+s.fam.b;
+  return {prompt:"À quelle étape y aura-t-il exactement "+total+" "+s.noun+" ? (Réponds par le numéro de "+s.word.cap.toLowerCase()+".)", figure:s.figure, answer:k};
+}
+function varyPatternStep(){
+  var s = patSetup();
+  return {prompt:"À chaque "+s.word.cap.toLowerCase()+" qui passe, combien de "+s.noun+" de plus faut-il dessiner ?", figure:s.figure, answer:s.fam.a};
+}
+function varyPatternEval(){
+  var a = ri(2,9), b = ri(1,9), n = ri(10,50);
+  return {prompt:"Le nombre de jetons dessinés le jour <i>n</i> est donné par l'expression <b>"+b+" + ("+a+" × <i>n</i>)</b>. Combien de jetons dessine-t-on le jour "+n+" ?", answer:b+a*n};
+}
+function varyPatternSquares(){
+  var kind = pick(["square","circle"]), n = pick([5,6,7,8,9,10]);
+  return {prompt:"Combien de "+PAT_NOUN[kind]+" faut-il dessiner pour le motif "+n+" ?",
+    figure:patternFigure(function(k){ var c = [], i, j; for(i=0;i<k;i++) for(j=0;j<k;j++) c.push([i,j]); return c; },4,kind,"Motif"), answer:n*n};
+}
+function varyPatternRect(){
+  var kind = pick(["triangle","heart"]), n = pick([4,5,6,7,8]);
+  return {prompt:"Combien de "+PAT_NOUN[kind]+" faut-il dessiner pour le motif "+n+" ?",
+    figure:patternFigure(function(k){ var c = [], i, j; for(i=0;i<k+1;i++) for(j=0;j<k;j++) c.push([i,j]); return c; },3,kind,"Motif"), answer:n*(n+1)};
+}
+function varyDoubling(){
+  var s = ri(2,9);
+  return {prompt:"Voici une suite de nombres : <b>"+s+" ; "+2*s+" ; "+4*s+" ; "+8*s+"</b>. Quel est le nombre suivant ?", answer:16*s};
+}
+function varySteadyAdd(){
+  var s = ri(2,15), k = ri(3,12);
+  return {prompt:"Voici une suite de nombres : <b>"+s+" ; "+(s+k)+" ; "+(s+2*k)+" ; "+(s+3*k)+"</b>. Quel est le nombre suivant ?", answer:s+4*k};
+}
+
+/* ---- horloges à aiguilles (Flash Maths) ---- */
+var CLOCK_HOURS = ["minuit","une heure","deux heures","trois heures","quatre heures","cinq heures","six heures","sept heures","huit heures","neuf heures","dix heures","onze heures","midi"];
+var CLOCK_MIN = {5:"cinq",10:"dix",20:"vingt",25:"vingt-cinq"};
+var CLOCK_LESS = {35:"vingt-cinq",40:"vingt",50:"dix",55:"cinq"};
+function clockHourWord(h24){ var h = h24%12; return (h24===12) ? "midi" : (h24===24 ? "minuit" : CLOCK_HOURS[h]); }
+function clockSpoken(h24,m){
+  var hw = clockHourWord(h24);
+  if(m===0) return hw;
+  if(m===15) return hw+" et quart";
+  if(m===30) return hw+(h24===12?" et demi":" et demie");
+  if(m===45) return clockHourWord(h24+1)+" moins le quart";
+  if(m<30) return hw+" "+CLOCK_MIN[m];
+  return clockHourWord(h24+1)+" moins "+CLOCK_LESS[m];
+}
+function clockDigital(h24,m){ return h24+" h"+(m?" "+m+" min":""); }
+function clockSvg(h24,m,period){
+  var S = 170, c = S/2, R = 76, svg = fracSvgOpen(S,S+18), k;
+  svg += '<circle cx="'+c+'" cy="'+c+'" r="'+R+'" fill="#fff" stroke="'+FR_INK+'" stroke-width="4"/>';
+  for(k=0;k<60;k++){
+    var a = k*6*Math.PI/180, big = k%5===0, r1 = R-(big?9:5);
+    svg += '<line x1="'+(c+r1*Math.sin(a)).toFixed(1)+'" y1="'+(c-r1*Math.cos(a)).toFixed(1)+'" x2="'+(c+(R-2)*Math.sin(a)).toFixed(1)+'" y2="'+(c-(R-2)*Math.cos(a)).toFixed(1)+'" stroke="'+FR_INK+'" stroke-width="'+(big?2:1)+'"/>';
+  }
+  for(k=1;k<=12;k++){
+    var b = k*30*Math.PI/180;
+    svg += '<text x="'+(c+58*Math.sin(b)).toFixed(1)+'" y="'+(c-58*Math.cos(b)+5).toFixed(1)+'" font-size="15" font-weight="800" text-anchor="middle" fill="'+FR_INK+'">'+k+'</text>';
+  }
+  var ah = ((h24%12)+m/60)*30*Math.PI/180, am = m*6*Math.PI/180;
+  svg += '<line x1="'+c+'" y1="'+c+'" x2="'+(c+36*Math.sin(ah)).toFixed(1)+'" y2="'+(c-36*Math.cos(ah)).toFixed(1)+'" stroke="'+FR_INK+'" stroke-width="6" stroke-linecap="round"/>';
+  svg += '<line x1="'+c+'" y1="'+c+'" x2="'+(c+56*Math.sin(am)).toFixed(1)+'" y2="'+(c-56*Math.cos(am)).toFixed(1)+'" stroke="'+FR_INK+'" stroke-width="3.5" stroke-linecap="round"/>';
+  svg += '<circle cx="'+c+'" cy="'+c+'" r="4.5" fill="'+FR_INK+'"/>';
+  svg += '<text x="'+c+'" y="'+(S+12)+'" font-size="14" font-weight="800" text-anchor="middle" fill="'+FR_COLOR+'">'+period+'</text>';
+  return svg + '</svg>';
+}
+function varyClock(){
+  var h24 = ri(6,22), m = pick([0,5,10,15,20,25,30,35,40,45,50,55]);
+  var period = h24<12 ? "matin" : h24<18 ? "après-midi" : "soir";
+  var correctD = clockDigital(h24,m), correctS = clockSpoken(h24,m);
+  var flip = h24===12 ? 11 : (h24<12 ? h24+12 : h24-12);
+  var wrongD = clockDigital(flip,m);
+  var swapH = (m/5)===0 ? 12 : m/5, swapM = ((h24%12)||12)*5%60;
+  var wrongS = clockSpoken(swapH+(h24>=12&&swapH<12?12:0), swapM);
+  if(wrongS===correctS) wrongS = clockSpoken(h24, m===0?5:(m>=30?10:35));
+  var opts = shuffled([{t:correctD,ok:true},{t:correctS,ok:true},{t:wrongD,ok:false},{t:wrongS,ok:false}]);
+  return {prompt:"Quelle heure est-il ? Trouve la ou les bonnes réponses.", figure:clockSvg(h24,m,period),
+    choices:opts.map(function(o){ return o.t; }),
+    correctSet:opts.map(function(o,i){ return o.ok ? i : -1; }).filter(function(i){ return i>=0; })};
+}
+function varyHour24(){
+  if(Math.random()<0.5){ var h = ri(6,11); return {prompt:"Il est "+h+" heures du soir. Écris cette heure sur 24 heures (nombre d'heures seulement).", answer:h+12}; }
+  var g = ri(13,17); return {prompt:"Il est "+g+" h. Quelle heure est-ce l'après-midi, sur une horloge de 12 heures ? (nombre d'heures seulement)", answer:g-12};
+}
+
+var CH5_LECON = [
+  vitem({id:"L1", type:"numeric"}, varyPatternCount),
+  vitem({id:"L2", type:"numeric"}, varyPatternCount),
+  vitem({id:"L3", type:"numeric"}, varyPatternCount),
+  vitem({id:"L4", type:"numeric"}, varyPatternCount),
+  vitem({id:"L5", type:"numeric"}, varyPatternStep),
+  vitem({id:"L6", type:"numeric"}, varyPatternStep),
+  vitem({id:"L7", type:"mcq"}, varyPatternExpr),
+  vitem({id:"L8", type:"mcq"}, varyPatternExpr),
+  vitem({id:"L9", type:"mcq"}, varyPatternExpr),
+  vitem({id:"L10", type:"numeric"}, varyPatternDay),
+  vitem({id:"L11", type:"numeric"}, varyPatternDay),
+  vitem({id:"L12", type:"numeric"}, varyPatternEval),
+  vitem({id:"L13", type:"numeric"}, varyPatternEval),
+  vitem({id:"L14", type:"numeric"}, varyPatternSquares),
+  vitem({id:"L15", type:"numeric"}, varyPatternSquares),
+  vitem({id:"L16", type:"numeric"}, varyPatternRect),
+  vitem({id:"L17", type:"numeric"}, varyDoubling),
+  vitem({id:"L18", type:"numeric"}, varySteadyAdd)
+];
+
+var CH5_JESAIS = (function(){
+  var fig = segStripFigure(3);
+  function row(n,choices,correct){ return {q:"Pour l'étape "+n+", on doit tracer…", figure:fig, choices:choices, correct:[correct]}; }
+  return {
+    title:"Je sais identifier une régularité et calculer un terme d'une suite de motifs.",
+    rows:[
+      row(4,["9 segments","12 segments","8 segments"],0),
+      row(5,["10 segments","11 segments","15 segments"],1),
+      row(6,["13 segments","12 segments","18 segments"],0),
+      row(10,["20 segments","30 segments","21 segments"],2),
+      row(20,["41 segments","40 segments","60 segments"],0)
+    ]
+  };
+})();
+
+/* Flash Maths du Chapitre 5 : lire l'heure sur une horloge à aiguilles */
+var CH5_FLASH = [
+  vitem({id:"F1", type:"mcq_multi"}, varyClock),
+  vitem({id:"F2", type:"mcq_multi"}, varyClock),
+  vitem({id:"F3", type:"mcq_multi"}, varyClock),
+  vitem({id:"F4", type:"mcq_multi"}, varyClock),
+  vitem({id:"F5", type:"mcq_multi"}, varyClock),
+  vitem({id:"F6", type:"mcq_multi"}, varyClock),
+  vitem({id:"F7", type:"mcq_multi"}, varyClock),
+  vitem({id:"F8", type:"mcq_multi"}, varyClock),
+  vitem({id:"F9", type:"numeric"}, varyHour24),
+  vitem({id:"F10", type:"numeric"}, varyHour24)
+];
+
+/* Calcul du Chapitre 5 : multiplier des dizaines, centaines, milliers */
+function varyMultRound(){
+  var p1 = pick([10,100,1000]), p2 = p1===1000 ? pick([10,100]) : pick([10,100,1000]);
+  var a = ri(2,9)*p1, b = ri(2,9)*p2;
+  return {prompt:fmtNum(a)+" × "+fmtNum(b), answer:a*b};
+}
+function varyMultRoundMissing(){
+  var a = ri(2,9)*10, k = ri(2,9)*pick([10,100]);
+  return {prompt:a+" × ? = "+fmtNum(a*k), answer:k};
+}
+function varyDecMult(){
+  var a = ri(1000,99999)/100, b = ri(2,9);
+  return Math.random()<0.75 ? {prompt:"Calcule : "+fd(a,2)+" × "+b, answer:round2(a*b)} : {prompt:"Calcule : "+b+" × "+fd(a,2), answer:round2(a*b)};
+}
+var CH5_CALCUL = [];
+(function(){
+  var add = calcBuilder(CH5_CALCUL), i;
+  /* Séance 1 */
+  add(1, varySuite(1000,1,function(){ return ri(10000,99999); }), false, 20);
+  add(1, function(){ var r = ri(2,9)*10, s = ri(2,9)*10; return {prompt:"Une salle de spectacle dispose de "+r+" rangées de "+s+" sièges. Quelle est la capacité totale d'accueil de cette salle ?", answer:r*s, unit:"places"}; }, false, 30);
+  for(i=0;i<8;i++) add(1, varyMultRound);
+  /* Séance 2 */
+  add(2, varySuite(1000,-1,function(){ return ri(100000,990000); }), false, 20);
+  for(i=0;i<3;i++) add(2, varyMultRound);
+  add(2, varyMultRoundMissing);
+  for(i=0;i<8;i++) add(2, varyMultRound, true);
+  add(2, varyMultRoundMissing, true);
+  add(2, varyMultRoundMissing, true);
+  /* Séance 3 */
+  add(3, varySuite(1000,1,function(){ return ri(100000,990000); }), false, 20);
+  add(3, function(){ var r = ri(2,9)*10, f = ri(2,9)*100; return {prompt:"La directrice de l'école a acheté "+r+" ramettes de papier de "+f+" feuilles chacune. Combien de feuilles a-t-elle achetées en tout ?", answer:r*f, unit:"feuilles"}; }, false, 30);
+  add(3, function(){ var n = ri(2,9)*100, v = ri(2,9)*10; return {prompt:"Une association reçoit "+n+" dons de "+v+" € chacun. Quelle est la valeur totale de ces dons ?", answer:n*v, unit:"€"}; }, false, 30);
+  add(3, function(){ var n = ri(2,9)*100, m = ri(2,9)*10; return {prompt:"Un camion transporte "+n+" caisses de "+m+" kg chacune. Quelle est la masse totale du chargement ?", answer:n*m, unit:"kg"}; }, false, 30);
+  add(3, function(){ return {prompt:"Il y a 60 minutes dans une heure et 60 secondes dans une minute. Combien de secondes y a-t-il dans une heure ?", answer:3600, unit:"s"}; }, false, 30);
+  add(3, function(){ var t = ri(2,9)*10, l = ri(2,9)*100; return {prompt:"Un cycliste effectue "+t+" tours d'une piste de "+l+" m de longueur. Quelle distance parcourt-il en tout ?", answer:t*l, unit:"m"}; }, false, 30);
+  /* Séance 4 */
+  add(4, varySuite(1000,-1,function(){ return ri(100000,990000); }), false, 20);
+  for(i=0;i<9;i++) add(4, varyMultRound, true);
+  add(4, varyMultRoundMissing, true);
+  /* Poser les opérations (séance 5) : multiplication d'un nombre décimal par un nombre entier */
+  for(i=0;i<5;i++) add(5, varyDecMult, false, 45);
+})();
+
+/* Atelier problèmes du Chapitre 5 : proportionnalité */
+function varyBalloons(){
+  var unit = ri(4,15), k1 = pick([3,4,5]), k2 = pick([6,7,8]), m = pick([2,9,10,12,15]);
+  return {prompt:"Un lot de "+k1+" ballons coûte "+(unit*k1)+" €. Un lot de "+k2+" ballons coûte "+(unit*k2)+" €. Le magasin ne fait pas de remise. Quel est le prix d'un lot de "+m+" ballons ?", answer:unit*m};
+}
+function varyRecipe(){
+  var base = pick([2,4]), per = pick([2,3,4]), target = base*ri(3,8);
+  return {prompt:"Dans la recette du poulet aux tomates, il faut "+(base*per)+" tomates pour "+base+" personnes. Combien de tomates faut-il pour "+target+" personnes ?", answer:target*per};
+}
+function varyMarbleMass(){
+  var w = ri(4,12), a = pick([3,4]), b = pick([6,7]), n = ri(8,20);
+  return {prompt:"Léo dispose d'un sac de billes identiques. Il sait que "+a+" billes ont une masse de "+(w*a)+" g et que "+b+" billes ont une masse de "+(w*b)+" g. Quelle est la masse de "+n+" billes ?", answer:w*n, unit:"g"};
+}
+function varyMarbleCount(){
+  var w = ri(4,12), a = pick([3,4]), n = ri(10,50);
+  return {prompt:"Léo dispose d'un sac de billes identiques. Il sait que "+a+" billes ont une masse de "+(w*a)+" g. Combien de billes ont une masse de "+fmtNum(w*n)+" g ?", answer:n, unit:"billes"};
+}
+function varyCarrots(){
+  var u = ri(16,60)/20, a = pick([3,4]), n = pick([6,7,8,10,15]);
+  return {prompt:a+" kg de carottes coûtent "+fmtEuro(u*a)+". Combien coûtent "+n+" kg de carottes ?", answer:round2(u*n), unit:"€"};
+}
+function varySweet(){
+  var w = ri(2,5), s = ri(3,8), k = ri(2,4), d = pick([-2,-1,0,1,2]);
+  var vA = w*k, sA = s*k+d;
+  return {prompt:"Dans la casserole A, je mets "+vA+" verres d'eau et "+sA+" morceaux de sucre. Dans la casserole B, je mets "+w+" verres d'eau et "+s+" morceaux de sucre. Quelle casserole contient l'eau la plus sucrée ?",
+    choices:["Casserole A","Casserole B","Elles sont aussi sucrées l'une que l'autre"], answerIndex:d>0?0:(d<0?1:2)};
+}
+var CH5_PROBLEME = [
+  vitem({id:"P1", type:"numeric", unit:"€"}, varyBalloons),
+  vitem({id:"P2", type:"numeric", unit:"€"}, varyBalloons),
+  vitem({id:"P3", type:"numeric", unit:"tomates"}, varyRecipe),
+  vitem({id:"P4", type:"numeric"}, varyMarbleMass),
+  vitem({id:"P5", type:"numeric"}, varyMarbleCount),
+  vitem({id:"P6", type:"numeric"}, varyCarrots),
+  vitem({id:"P7", type:"numeric"}, varyCarrots),
+  vitem({id:"P8", type:"mcq"}, varySweet)
+];
+
 var CONTENT = {
   periods:[
     {id:1, chapters:[1,2,3,4,5,6,7]},
@@ -1625,7 +1929,13 @@ var CONTENT = {
         calcul:{label:"Calcul", chrono:true, timeLimit:12, exercises:CH4_CALCUL},
         probleme:{label:"Atelier problèmes", exercises:CH4_PROBLEME}
       }},
-    5: chStub(5,"Algèbre (1)","nombres",1),
+    5: {id:5, title:"Algèbre (1)", domain:"nombres", period:1,
+      blocks:{
+        lecon:{label:"Leçon", exercises:CH5_LECON, recap:CH5_JESAIS},
+        flash:{label:"Flash Maths", chrono:true, timeLimit:30, exercises:CH5_FLASH},
+        calcul:{label:"Calcul", chrono:true, timeLimit:12, exercises:CH5_CALCUL},
+        probleme:{label:"Atelier problèmes", exercises:CH5_PROBLEME}
+      }},
     6: chStub(6,"Fractions décimales","nombres",1),
     7: chStub(7,"Nombres décimaux (1)","nombres",1),
     8: chStub(8,"Multiplication posée de deux nombres entiers","nombres",2),
